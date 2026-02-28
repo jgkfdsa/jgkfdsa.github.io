@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    
+    <meta name="author" content="jgkfdsa">
+    
+    <!-- Completely eliminate flash of wrong theme -->
+    <script>
+        (function() {
+            const THEME_KEY = "REDEFINE-THEME-STATUS";
+            const DARK = "dark", LIGHT = "light";
+            
+            // Get preferred theme
+            function getTheme() {
+                try {
+                    const saved = localStorage.getItem(THEME_KEY);
+                    if (saved) {
+                        const { isDark } = JSON.parse(saved);
+                        return isDark ? DARK : LIGHT;
+                    }
+                } catch (e) {}
+                
+                return matchMedia("(prefers-color-scheme: dark)").matches ? DARK : LIGHT;
+            }
+            
+            // Apply theme to document
+            function applyTheme(theme) {
+                const isDark = theme === DARK;
+                const root = document.documentElement;
+                
+                // Set classes for compatibility
+                root.classList.add(theme);
+                root.classList.remove(isDark ? LIGHT : DARK);
+                root.style.colorScheme = theme;
+            }
+            
+            // Initial application
+            const theme = getTheme();
+            applyTheme(theme);
+            
+            // Listen for system preference changes
+            matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ({ matches }) => {
+                // Only update if using system preference (no localStorage entry)
+                if (!localStorage.getItem(THEME_KEY)) {
+                    applyTheme(matches ? DARK : LIGHT);
+                }
+            });
+            
+            // Set body classes ASAP (before DOMContentLoaded)
+            (function() {
+                const addBodyClass = () => {
+                    const b = document.body;
+                    if (!b) return false;
+                    b.classList.add(theme + "-mode");
+                    return true;
+                };
+
+                // Try immediately
+                if (addBodyClass()) return;
+
+                // Observe until body exists
+                const mo = new MutationObserver(() => {
+                    if (addBodyClass()) mo.disconnect();
+                });
+                mo.observe(document.documentElement, { childList: true, subtree: true });
+            })();
+        })();
+    </script>
+    
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://jgkfdsa.github.io/2026/02/28/network-基础/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+    
+        
+        <meta name="description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基础">
+<meta property="og:url" content="https://jgkfdsa.github.io/2026/02/28/network-%E5%9F%BA%E7%A1%80/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://jgkfdsa.github.io/images/redefine-og.webp">
+<meta property="article:published_time" content="2026-02-28T09:53:37.396Z">
+<meta property="article:modified_time" content="2026-02-28T09:53:37.396Z">
+<meta property="article:author" content="jgkfdsa">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jgkfdsa.github.io/images/redefine-og.webp">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="/images/redefine-favicon.svg" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/redefine-favicon.svg">
+    <meta name="theme-color" content="#A31F34">
+    <link rel="shortcut icon" href="/images/redefine-favicon.svg">
+    <!--- Page Info-->
+    
+    <title>
+        
+            基础 | Theme Redefine
+        
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/css/build/tailwind.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/GeistMono/geist-mono.css">
+
+    
+<link rel="stylesheet" href="/fonts/Geist/geist.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+    
+    
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"jgkfdsa.github.io","root":"/","language":"zh-CN","path":"search.json"};
+    window.theme = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"delete_mask":false,"title_alignment":"left","headings_top_spacing":{"h1":"3.2rem","h2":"2.4rem","h3":"1.9rem","h4":"1.6rem","h5":"1.4rem","h6":"1.3rem"}},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":false,"auto":false,"list":[]},"code_block":{"copy":true,"style":"mac","highlight_theme":{"light":"github","dark":"vs2015"},"font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":{"enable":false,"default":"cc_by_nc_sa"},"lazyload":true,"pangu_js":false,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#A31F34","secondary":null,"default_mode":"light"},"global":{"fonts":{"chinese":{"enable":false,"family":null,"url":null},"english":{"enable":false,"family":null,"url":null},"title":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":false},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":false,"site_pv":false,"site_uv":false,"post_pv":false},"single_page":true,"preloader":{"enable":false,"custom_message":null},"side_tools":{"gear_rotation":true,"auto_expand":false},"open_graph":{"enable":true,"image":"/images/redefine-og.webp","description":"Hexo Theme Redefine, Redefine Your Hexo Journey."},"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/images/wallhaven-wqery6-light.webp","dark":"/images/wallhaven-wqery6-dark.webp"},"title":"Theme Redefine","subtitle":{"text":[],"hitokoto":{"enable":false,"show_author":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":false,"style":"default","links":[],"qrs":[]}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":true,"version":"11.4.1","theme":{"light":"default","dark":"dark"}}},"version":"2.9.0","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Categories":{"path":"/categories/","icon":"fa-solid fa-folder"},"Github":{"path":"https://github.com/jgkfdsa/blog-source","icon":"fa-brands fa-github"}},"search":{"enable":true,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"blur","masonry":{"batch_size":12,"initial_batch_size":24}},"home":{"sidebar":{"enable":true,"position":"left","first_item":"menu","announcement":null,"show_on_mobile":true,"links":null},"article_date_format":"auto","excerpt_length":200,"categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footer":{"runtime":true,"icon":"<i class=\"fa-solid fa-heart fa-beat\" style=\"--fa-animation-duration: 0.5s; color: #f54545\"></i>","start":"2026/01/08 10:45:14","statistics":true,"customize":null,"icp":{"enable":false,"number":null,"url":null}},"footerStart":"2026/01/08 10:45:14","mermaid":{"style":{"light":"default","dark":"dark"}}};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.i18n = {"search":"站内搜索您需要的内容...","toc":"目录","prev":"上一页","next":"下一页","prev_posts":"上一篇","next_posts":"下一篇","page":"第 %d 页","recent_posts":"最新文章","share":"分享","powered_by":"由 %s 驱动","theme":"主题","rss_feed":"RSS Feed","category":"分类","categories":"分类","tag":"标签","tags":"标签","post":"文章","posts":"文章","tagcloud":"标签云","comment":"评论","comments":"评论","top":"置顶","sticky":"置顶","go-back-home":"回到首页","masonry_loading":"照片加载中...","image_viewer":"图片查看器","close":"关闭","exif":{"title":"EXIF","cards":{"camera":"相机","lens":"镜头","exposure":"曝光","other":"其他"},"fields":{"make":"品牌","model":"机型","date_taken":"拍摄时间","lens_model":"镜头","focal_length":"焦距","focus_mode":"对焦模式","shutter":"快门","aperture":"光圈","iso":"感光度","exposure_program":"曝光程序","exposure_compensation":"曝光补偿","metering_mode":"测光模式","flash":"闪光灯","white_balance":"白平衡","latitude":"纬度","longitude":"经度","altitude":"海拔"},"status":{"loading":"加载中...","no_exif":"无 EXIF 信息","library_missing":"EXIF 库未加载","image_source_missing":"图片地址不可用","unavailable":"EXIF 不可用（可能被 CORS 阻止或缺少元数据）","flag_unavailable":"EXIF 不可用"}},"home":"首页","archive":"归档","archives":"归档","about":"关于","links":"链接","link":"链接","friends":"友情链接","friend":"友情链接","timeline":"时间轴","shuoshuo":"说说","bookmarks":"书签","site_uv":"访问人数","site_pv":"总访问量","read_more":"阅读全文","wordcount":"字","min2read":"分钟","changelog":"更新日志","status":"状态","runtime":"博客已运行","days":"天","hours":"小时","minutes":"分钟","seconds":"秒","optimized_by":"并由 Evan 进行优化","rights":"版权所有","site_posts":"共撰写了 %s 篇文章","site_wordcount":"共 %s 字","copyright":{"title":"标题","author":"作者","link":"链接","create_time":"创建于","update_time":"更新于","license_title":"版权声明","license_content":"本文章采用 %s 进行许可。","all_rights_reserved":"版权所有 &#169 %s，禁止转载。","public_domain":"本文为公有领域作品，可自由转载、引用。"},"ago":{"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"},"create_time":"创建","update_time":"更新","expired":"这篇文章最后更新于 %s 天前，内容可能已经过时。"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+	<div class="progress-bar-container">
+	
+
+	
+	<span class="pjax-progress-bar"></span>
+	<!--        <span class="swup-progress-icon">-->
+	<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+	<!--        </span>-->
+	
+</div>
+
+<main class="page-container" id="swup">
+
+	
+
+	<div class="main-content-container flex flex-col justify-between min-h-dvh">
+		<div class="main-content-header">
+			<header class="navbar-container px-6 md:px-12">
+    <div class="navbar-content transition-navbar ">
+        <div class="left">
+            
+            <a class="logo-title" href="/">
+                
+                Theme Redefine
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/categories/"
+                                        >
+                                    <i class="fa-solid fa-folder fa-fw"></i>
+                                    分类
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   target="_blank" rel="noopener" href="https://github.com/jgkfdsa/blog-source"
+                                        >
+                                    <i class="fa-brands fa-github fa-fw"></i>
+                                    GITHUB
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                    
+                        <li class="navbar-item search search-popup-trigger">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-dvh w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/categories/"
+                        >
+                            <span>
+                                分类
+                            </span>
+                            
+                                <i class="fa-solid fa-folder fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           target="_blank" rel="noopener" href="https://github.com/jgkfdsa/blog-source"
+                        >
+                            <span>
+                                GITHUB
+                            </span>
+                            
+                                <i class="fa-brands fa-github fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+
+            
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">0</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">8</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">40</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+		</div>
+
+		<div class="main-content-body transition-fade-up">
+			
+
+			<div class="main-content">
+				<div class="post-page-container flex relative justify-between box-border w-full h-full">
+	<div class="article-content-container">
+
+		<div class="article-title relative w-full">
+			
+			<div class="w-full flex items-center pt-6 justify-start">
+				<h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3">基础</h1>
+			</div>
+			
+		</div>
+
+		
+		<div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+			<div class="avatar w-[46px] h-[46px] shrink-0 rounded-medium border border-border-color p-px">
+				<img src="/images/redefine-avatar.svg">
+			</div>
+			<div class="info flex flex-col justify-between">
+				<div class="author flex items-center">
+					<span class="name text-default-text-color text-lg font-semibold">jgkfdsa</span>
+					
+				</div>
+				<div class="meta-info">
+					<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2026-02-28 17:53:37</span>
+        <span class="mobile">2026-02-28 17:53:37</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2026-02-28 17:53:37</span>
+            <span class="mobile">2026-02-28 17:53:37</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/network/">network</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+
+    
+    
+    
+    
+</div>
+
+				</div>
+			</div>
+		</div>
+		
+
+		
+
+
+		<div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+			<h1 id="OSI-七层模型"><a href="#OSI-七层模型" class="headerlink" title="OSI 七层模型"></a>OSI 七层模型</h1><h2 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h2><table>
+<thead>
+<tr>
+<th>层次</th>
+<th>名称</th>
+<th>主要功能</th>
+<th>数据单元</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>7</td>
+<td>应用层（Application Layer）</td>
+<td>提供用户与网络的直接接口</td>
+<td>数据（Data）</td>
+</tr>
+<tr>
+<td>6</td>
+<td>表示层（Presentation Layer）</td>
+<td>数据格式转换、加密解密、压缩</td>
+<td>数据</td>
+</tr>
+<tr>
+<td>5</td>
+<td>会话层（Session Layer）</td>
+<td>建立、管理和终止会话</td>
+<td>数据</td>
+</tr>
+<tr>
+<td>4</td>
+<td>传输层（Transport Layer）</td>
+<td>端到端可靠&#x2F;不可靠传输</td>
+<td>段（Segment）或数据报</td>
+</tr>
+<tr>
+<td>3</td>
+<td>网络层（Network Layer）</td>
+<td>路由选择、逻辑寻址（IP）</td>
+<td>包（Packet）</td>
+</tr>
+<tr>
+<td>2</td>
+<td>数据链路层（Data Link Layer）</td>
+<td>帧传输、物理寻址（MAC）、差错检测</td>
+<td>帧（Frame）</td>
+</tr>
+<tr>
+<td>1</td>
+<td>物理层（Physical Layer）</td>
+<td>在物理介质上传输比特流</td>
+<td>比特（Bit）</td>
+</tr>
+</tbody></table>
+<h2 id="各层详细说明"><a href="#各层详细说明" class="headerlink" title="各层详细说明"></a>各层详细说明</h2><h3 id="第7层：应用层（Application-Layer）"><a href="#第7层：应用层（Application-Layer）" class="headerlink" title="第7层：应用层（Application Layer）"></a>第7层：应用层（Application Layer）</h3><ul>
+<li>作用：用户直接交互的层面，为应用程序提供网络服务接口，是用户与网络的“窗口”。</li>
+<li>不是指“应用程序本身”，而是指支持应用通信的协议和服务。</li>
+<li>典型协议&#x2F;服务：HTTP&#x2F;HTTPS（网页）、FTP（文件传输）、SMTP&#x2F;POP3&#x2F;IMAP（邮件）、DNS（域名解析）、Telnet、SSH（远程登录）</li>
+<li>不关心底层如何传输，只关注“做什么”。</li>
+</ul>
+<h3 id="第6层：表示层（Presentation-Layer）"><a href="#第6层：表示层（Presentation-Layer）" class="headerlink" title="第6层：表示层（Presentation Layer）"></a>第6层：表示层（Presentation Layer）</h3><ul>
+<li>作用：解决数据表示问题，确保发送方和接收方对数据的理解一致。</li>
+<li>核心功能：<ul>
+<li>数据格式转换：如 ASCII ↔ EBCDIC，JSON ↔ XML。</li>
+<li>加密与解密：SSL&#x2F;TLS 的部分功能在此层实现（实际中常在应用层处理）。</li>
+<li>数据压缩：减少传输量（如GZIP）。</li>
+<li>字符编码转换：UTF-8、GBK 等。<blockquote>
+<p>注意：在 TCP&#x2F;IP 模型中，表示层功能通常由应用层协议自行处理。</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="第5层：会话层（Session-Layer）"><a href="#第5层：会话层（Session-Layer）" class="headerlink" title="第5层：会话层（Session Layer）"></a>第5层：会话层（Session Layer）</h3><ul>
+<li>作用：管理两个设备之间的通信会话（对话）。</li>
+<li>核心功能：<ul>
+<li>建立、维护、同步、终止会话。</li>
+<li>会话检查点与恢复：如断点续传。</li>
+<li>控制对话方向：单工、半双工、全双工。</li>
+</ul>
+</li>
+<li>现实情况：大多数现代应用（如Web）将此功能集成到应用层（如通过 cookies 或 tokens 管理会话）。</li>
+</ul>
+<h3 id="第4层：传输层（Transport-Layer）"><a href="#第4层：传输层（Transport-Layer）" class="headerlink" title="第4层：传输层（Transport Layer）"></a>第4层：传输层（Transport Layer）</h3><ul>
+<li>作用：提供端到端（进程到进程）的可靠或不可靠数据传输。</li>
+<li>核心功能：<ul>
+<li>分段与重组：将上层数据分割成适合网络传输的单元。</li>
+<li>端口寻址：使用端口号区分同一主机上的不同应用（如80&#x3D;HTTP，443&#x3D;HTTPS）。</li>
+<li>流量控制：防止发送方压垮接收方。</li>
+<li>错误恢复（仅TCP）：确认、重传、排序。</li>
+<li>拥塞控制（TCP）。</li>
+</ul>
+</li>
+<li>主要协议：TCP、UDP</li>
+</ul>
+<h3 id="第3层：网络层（Network-Layer）"><a href="#第3层：网络层（Network-Layer）" class="headerlink" title="第3层：网络层（Network Layer）"></a>第3层：网络层（Network Layer）</h3><ul>
+<li>作用：实现主机到主机的逻辑通信，负责跨网络的数据包路由。</li>
+<li>核心功能：<ul>
+<li>逻辑寻址：使用 IP 地址（如 192.168.1.10）标识设备。</li>
+<li>路由选择：通过路由器决定最佳路径（依赖路由协议如 OSPF、BGP）。</li>
+<li>分片与重组：当数据包超过 MTU 时进行分片。</li>
+</ul>
+</li>
+<li>主要协议：IP、ICMP（ping 使用）、ARP（严格来说属于链路层，但服务于网络层）</li>
+<li>典型设备：路由器</li>
+</ul>
+<h3 id="第2层：数据链路层（Data-Link-Layer）"><a href="#第2层：数据链路层（Data-Link-Layer）" class="headerlink" title="第2层：数据链路层（Data Link Layer）"></a>第2层：数据链路层（Data Link Layer）</h3><ul>
+<li>作用：在同一物理网络（如同一个局域网）内实现节点到节点的可靠帧传输。</li>
+<li>分为两个子层：<ul>
+<li>LLC（Logical Link Control）：提供流量控制、差错控制（较少使用）。</li>
+<li>MAC（Media Access Control）：控制对物理介质的访问，处理 MAC 地址。</li>
+</ul>
+</li>
+<li>核心功能：<ul>
+<li>成帧（Framing）：将网络层包封装成帧。</li>
+<li>物理寻址：使用 MAC 地址（如 00:1A:2B:3C:4D:5E）。</li>
+<li>差错检测：通过 CRC（循环冗余校验）判断帧是否损坏。</li>
+<li>介质访问控制：如以太网的 CSMA&#x2F;CD（有线）、Wi-Fi 的 CSMA&#x2F;CA（无线）。</li>
+</ul>
+</li>
+<li>典型设备：交换机、网桥</li>
+</ul>
+<h3 id="第1层：物理层（Physical-Layer）"><a href="#第1层：物理层（Physical-Layer）" class="headerlink" title="第1层：物理层（Physical Layer）"></a>第1层：物理层（Physical Layer）</h3><ul>
+<li>作用：在物理介质上传输原始比特流（0 和 1）。</li>
+<li>不关心数据含义，只负责“传比特”。</li>
+<li>典型设备：集线器（Hub）、中继器（Repeater）、网卡（NIC 的物理部分）</li>
+</ul>
+<h2 id="对比"><a href="#对比" class="headerlink" title="对比"></a>对比</h2><table>
+<thead>
+<tr>
+<th>功能</th>
+<th>OSI 七层</th>
+<th>TCP&#x2F;IP 四层</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>用户接口、服务</td>
+<td>应用层</td>
+<td>应用层</td>
+</tr>
+<tr>
+<td>数据表示、加密</td>
+<td>表示层</td>
+<td>← 合并到应用层</td>
+</tr>
+<tr>
+<td>会话管理</td>
+<td>会话层</td>
+<td>← 合并到应用层</td>
+</tr>
+<tr>
+<td>端到端传输</td>
+<td>传输层</td>
+<td>传输层</td>
+</tr>
+<tr>
+<td>路由与IP</td>
+<td>网络层</td>
+<td>网际层（Internet）</td>
+</tr>
+<tr>
+<td>帧传输、MAC</td>
+<td>数据链路层</td>
+<td>网络接口层</td>
+</tr>
+<tr>
+<td>比特传输</td>
+<td>物理层</td>
+<td>网络接口层</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>✅ OSI 是理论模型，TCP&#x2F;IP 是实践标准。</p>
+</blockquote>
+<h1 id="网址到网页"><a href="#网址到网页" class="headerlink" title="网址到网页"></a>网址到网页</h1><h2 id="整体流程概览（10个关键步骤）"><a href="#整体流程概览（10个关键步骤）" class="headerlink" title="整体流程概览（10个关键步骤）"></a>整体流程概览（10个关键步骤）</h2><ol>
+<li>URL 解析</li>
+<li>DNS 查询（域名 → IP 地址）</li>
+<li>建立 TCP 连接（三次握手）</li>
+<li>建立 TLS 安全连接（HTTPS 特有，四次握手）</li>
+<li>发送 HTTP 请求</li>
+<li>服务器处理请求并返回 HTTP 响应</li>
+<li>浏览器接收 HTML 内容</li>
+<li>解析 HTML 并构建 DOM 树</li>
+<li>加载并解析 CSS、JavaScript、图片等资源</li>
+<li>页面渲染（Painting）并呈现给用户</li>
+</ol>
+<h2 id="具体分析"><a href="#具体分析" class="headerlink" title="具体分析"></a>具体分析</h2><h3 id="1️-URL-解析"><a href="#1️-URL-解析" class="headerlink" title="1️. URL 解析"></a>1️. URL 解析</h3><p>浏览器首先解析你输入的字符串：</p>
+<ul>
+<li>协议：https</li>
+<li>主机名：<a class="link"   target="_blank" rel="noopener" href="http://www.example.com/" >www.example.com<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a></li>
+<li>路径：&#x2F;（默认根路径）</li>
+<li>端口：默认 443（HTTPS），若为 HTTP 则是 80</li>
+</ul>
+<h3 id="2-DNS-查询（Domain-Name-→-IP-Address）"><a href="#2-DNS-查询（Domain-Name-→-IP-Address）" class="headerlink" title="2. DNS 查询（Domain Name → IP Address）"></a>2. DNS 查询（Domain Name → IP Address）</h3><ul>
+<li>因为网络通信依赖 IP 地址，而非域名，所以必须将 <a class="link"   target="_blank" rel="noopener" href="http://www.example.com/" >www.example.com<i class="fa-solid fa-arrow-up-right ml-[0.2em] font-light align-text-top text-[0.7em] link-icon"></i></a> 转换为对应的 IP（如 93.184.216.34）。</li>
+<li>DNS 查询过程：<ol>
+<li>浏览器缓存：先查是否近期访问过该域名。</li>
+<li>操作系统缓存（如 Windows 的 DNS Client 服务）。</li>
+<li>本地 hosts 文件（如 &#x2F;etc&#x2F;hosts 或 C:\Windows\System32\drivers\etc\hosts）。</li>
+<li>向本地 DNS 服务器（通常是 ISP 提供的，如 8.8.8.8）。</li>
+<li>若本地 DNS 无缓存，则递归查询：根域名服务器（.）、顶级域服务器（.com）权威域名服务器（example.com 的 NS 记录）</li>
+<li>最终获得目标 IP 地址，并缓存结果（TTL 时间内有效）。<blockquote>
+<p>⚠️ DNS 使用 UDP 协议（端口 53），除非响应过大才用 TCP。</p>
+</blockquote>
+</li>
+</ol>
+</li>
+</ul>
+<h3 id="3-建立-TCP-连接（三次握手）"><a href="#3-建立-TCP-连接（三次握手）" class="headerlink" title="3. 建立 TCP 连接（三次握手）"></a>3. 建立 TCP 连接（三次握手）</h3><ul>
+<li>浏览器通过 Socket API 向目标 IP 的 443 端口发起 TCP 连接。</li>
+<li>TCP 三次握手：<ol>
+<li>SYN：客户端 → 服务器（“我想连你”）</li>
+<li>SYN-ACK：服务器 → 客户端（“我同意，你也准备好了吗？”）</li>
+<li>ACK：客户端 → 服务器（“我准备好了！”）</li>
+</ol>
+</li>
+</ul>
+<h3 id="4-TLS-握手（仅-HTTPS）"><a href="#4-TLS-握手（仅-HTTPS）" class="headerlink" title="4. TLS 握手（仅 HTTPS）"></a>4. TLS 握手（仅 HTTPS）</h3><ul>
+<li>由于使用的是 https:&#x2F;&#x2F;，需在 TCP 之上建立加密安全通道。</li>
+<li>TLS 1.2&#x2F;1.3 握手主要步骤（简化）：<ol>
+<li>Client Hello：浏览器发送支持的加密套件、随机数。</li>
+<li>Server Hello：服务器选择加密算法，返回证书、随机数。</li>
+<li>证书验证：浏览器验证证书是否由可信 CA 签发、是否过期、域名是否匹配。</li>
+<li>密钥交换：双方协商出会话密钥（用于后续对称加密）。</li>
+<li>Finished：双方用密钥加密消息确认握手成功。<blockquote>
+<p>🔒 之后所有 HTTP 数据都通过 AES 等对称加密传输，保证机密性与完整性。</p>
+</blockquote>
+</li>
+</ol>
+</li>
+</ul>
+
+		</div>
+
+		
+
+		
+
+		
+
+		
+		<div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+			
+			<div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="prev" rel="prev" href="/2026/02/28/network-tcp/">
+					<span class="left arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-left"></i>
+					</span>
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">tcp</span>
+						<span class="post-nav-item">上一篇</span>
+					</span>
+				</a>
+			</div>
+			
+			
+			<div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="next" rel="next" href="/2026/02/28/redis-%E5%BA%94%E7%94%A8/">
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">应用</span>
+						<span class="post-nav-item">下一篇</span>
+					</span>
+					<span class="right arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-right"></i>
+					</span>
+				</a>
+			</div>
+			
+		</div>
+		
+
+
+		
+	</div>
+
+	
+	<div class="toc-content-container">
+		<div class="post-toc-wrap">
+	<div class="post-toc">
+		<div class="toc-title">目录</div>
+		<div class="page-title">基础</div>
+		<ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#OSI-%E4%B8%83%E5%B1%82%E6%A8%A1%E5%9E%8B"><span class="nav-text">OSI 七层模型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BB%8B%E7%BB%8D"><span class="nav-text">介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%90%84%E5%B1%82%E8%AF%A6%E7%BB%86%E8%AF%B4%E6%98%8E"><span class="nav-text">各层详细说明</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC7%E5%B1%82%EF%BC%9A%E5%BA%94%E7%94%A8%E5%B1%82%EF%BC%88Application-Layer%EF%BC%89"><span class="nav-text">第7层：应用层（Application Layer）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC6%E5%B1%82%EF%BC%9A%E8%A1%A8%E7%A4%BA%E5%B1%82%EF%BC%88Presentation-Layer%EF%BC%89"><span class="nav-text">第6层：表示层（Presentation Layer）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC5%E5%B1%82%EF%BC%9A%E4%BC%9A%E8%AF%9D%E5%B1%82%EF%BC%88Session-Layer%EF%BC%89"><span class="nav-text">第5层：会话层（Session Layer）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC4%E5%B1%82%EF%BC%9A%E4%BC%A0%E8%BE%93%E5%B1%82%EF%BC%88Transport-Layer%EF%BC%89"><span class="nav-text">第4层：传输层（Transport Layer）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC3%E5%B1%82%EF%BC%9A%E7%BD%91%E7%BB%9C%E5%B1%82%EF%BC%88Network-Layer%EF%BC%89"><span class="nav-text">第3层：网络层（Network Layer）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC2%E5%B1%82%EF%BC%9A%E6%95%B0%E6%8D%AE%E9%93%BE%E8%B7%AF%E5%B1%82%EF%BC%88Data-Link-Layer%EF%BC%89"><span class="nav-text">第2层：数据链路层（Data Link Layer）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AC%AC1%E5%B1%82%EF%BC%9A%E7%89%A9%E7%90%86%E5%B1%82%EF%BC%88Physical-Layer%EF%BC%89"><span class="nav-text">第1层：物理层（Physical Layer）</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E6%AF%94"><span class="nav-text">对比</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BD%91%E5%9D%80%E5%88%B0%E7%BD%91%E9%A1%B5"><span class="nav-text">网址到网页</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B4%E4%BD%93%E6%B5%81%E7%A8%8B%E6%A6%82%E8%A7%88%EF%BC%8810%E4%B8%AA%E5%85%B3%E9%94%AE%E6%AD%A5%E9%AA%A4%EF%BC%89"><span class="nav-text">整体流程概览（10个关键步骤）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B7%E4%BD%93%E5%88%86%E6%9E%90"><span class="nav-text">具体分析</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1%EF%B8%8F-URL-%E8%A7%A3%E6%9E%90"><span class="nav-text">1️. URL 解析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-DNS-%E6%9F%A5%E8%AF%A2%EF%BC%88Domain-Name-%E2%86%92-IP-Address%EF%BC%89"><span class="nav-text">2. DNS 查询（Domain Name → IP Address）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%BB%BA%E7%AB%8B-TCP-%E8%BF%9E%E6%8E%A5%EF%BC%88%E4%B8%89%E6%AC%A1%E6%8F%A1%E6%89%8B%EF%BC%89"><span class="nav-text">3. 建立 TCP 连接（三次握手）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-TLS-%E6%8F%A1%E6%89%8B%EF%BC%88%E4%BB%85-HTTPS%EF%BC%89"><span class="nav-text">4. TLS 握手（仅 HTTPS）</span></a></li></ol></li></ol></li></ol>
+
+	</div>
+</div>
+	</div>
+	
+</div>
+
+			</div>
+
+			
+		</div>
+
+		<div class="main-content-footer">
+			<footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+              <span>2026</span>
+              -
+            
+            2026&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">jgkfdsa</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共撰写了 40 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.9.0</a></span>
+        </div>
+        
+        
+            <div>
+                博客已运行 <span class="odometer" id="runtime_days" ></span> 天 <span class="odometer" id="runtime_hours"></span> 小时 <span class="odometer" id="runtime_minutes"></span> 分钟 <span class="odometer" id="runtime_seconds"></span> 秒
+            </div>
+        
+        
+            <script data-swup-reload-script>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+		</div>
+	</div>
+
+	
+	<div class="post-tools">
+		<div class="post-tools-container">
+	<ul class="article-tools-list">
+		<!-- TOC aside toggle -->
+		
+		<li class="right-bottom-tools page-aside-toggle">
+			<i class="fa-regular fa-outdent"></i>
+		</li>
+		
+
+		<!-- go comment -->
+		
+	</ul>
+</div>
+	</div>
+	
+
+	<div class="right-side-tools-container">
+		<div class="side-tools-container">
+	<ul class="hidden-tools-list">
+		<li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-plus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-minus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+			<i class="fa-regular fa-moon"></i>
+		</li>
+
+		<!-- rss -->
+		
+
+		
+
+		<li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+			<i class="fa-regular fa-arrow-down"></i>
+		</li>
+	</ul>
+
+	<ul class="visible-tools-list">
+		<li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+			<i class="fa-regular fa-cog fa-spin"></i>
+		</li>
+		
+		<li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+			<i class="arrow-up fas fa-arrow-up"></i>
+			<span class="percent"></span>
+		</li>
+		
+		
+	</ul>
+</div>
+	</div>
+
+	<div class="image-viewer-container" role="dialog" aria-modal="true" aria-label="图片查看器">
+	<button class="image-viewer-close" type="button" aria-label="关闭">
+		<i class="fa-solid fa-xmark"></i>
+	</button>
+	<button class="image-viewer-prev" type="button" aria-label="上一页">
+		<i class="fa-solid fa-chevron-left"></i>
+	</button>
+	<div class="image-viewer-frame">
+		<img src="" alt="">
+	</div>
+	<div class="image-viewer-exif-panel hidden absolute left-1/2 bottom-20 -translate-x-1/2 w-[min(92vw,420px)] max-h-[60vh] overflow-hidden rounded-2xl bg-background-color-transparent-80 p-4 text-left shadow-redefine-flat backdrop-blur-md" role="dialog" aria-label="EXIF" aria-hidden="true">
+		<div class="flex items-center justify-between mb-3">
+			<span class="text-sm font-semibold text-first-text-color">EXIF</span>
+			<button class="image-viewer-exif-close flex h-8 w-8 items-center justify-center rounded-full bg-background-color-transparent-80 text-first-text-color transition hover:bg-background-color-transparent-40" type="button" aria-label="关闭">
+				<i class="fa-solid fa-xmark text-[0.65rem]"></i>
+			</button>
+		</div>
+		<div class="image-viewer-exif-cards grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-1 scrollbar-hide"></div>
+		<template class="image-viewer-exif-card-template">
+			<div class="rounded-lg bg-background-color-transparent-40 px-3 py-2">
+				<div class="image-viewer-exif-card-header flex items-center gap-2 mb-1">
+					<i class="image-viewer-exif-card-icon fa-solid fa-circle-info text-xs text-third-text-color"></i>
+					<div class="image-viewer-exif-card-title text-xs font-semibold text-first-text-color"></div>
+				</div>
+				<div class="image-viewer-exif-card-items flex flex-col gap-1"></div>
+			</div>
+		</template>
+	</div>
+	<button class="image-viewer-exif-toggle flex items-center gap-2 hidden absolute left-1/2 bottom-6 -translate-x-1/2 rounded-full border border-border-color bg-background-color-transparent-80 px-4 py-2 text-first-text-color backdrop-blur-md transition hover:bg-background-color-transparent-40" type="button" aria-label="EXIF" aria-expanded="false">
+		<i class="fa-solid fa-circle-info text-xs"></i>
+		<span class="text-xs font-semibold uppercase tracking-wider">EXIF</span>
+	</button>
+	<button class="image-viewer-next" type="button" aria-label="下一页">
+		<i class="fa-solid fa-chevron-right"></i>
+	</button>
+</div>
+
+
+	
+	<div class="search-pop-overlay">
+	<div class="popup search-popup">
+		<div class="search-header">
+			<span class="search-input-field-pre">
+				<i class="fa-solid fa-keyboard"></i>
+			</span>
+			<div class="search-input-container">
+				<input autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="站内搜索您需要的内容..." spellcheck="false" type="search" class="search-input">
+			</div>
+			<span class="popup-btn-close">
+				<i class="fa-solid fa-times"></i>
+			</span>
+		</div>
+		<div id="search-result">
+			<div id="no-result">
+				<i class="fa-solid fa-spinner fa-spin-pulse fa-5x fa-fw"></i>
+			</div>
+		</div>
+	</div>
+</div>
+	
+
+</main>
+
+
+
+<script src="/js/build/libs/Swup.min.js"></script>
+
+<script src="/js/build/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/build/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    window.swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+
+    window.dispatchEvent(
+        new CustomEvent("redefine:swup:ready", {
+            detail: {
+                swup: window.swup,
+            },
+        }),
+    );
+</script>
+
+
+
+
+	
+<script src="/js/build/main.js" type="module"></script>
+
+
+
+    
+<script src="/js/build/libs/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+    
+        
+<script src="/js/build/libs/mermaid.min.js"></script>
+
+    
+
+
+
+
+
+
+
+<script src="/js/build/libs/moment-with-locales.min.js" data-swup-reload-script=""></script>
+
+
+
+	
+</body>
+
+</html>

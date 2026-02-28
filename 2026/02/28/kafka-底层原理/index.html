@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    
+    <meta name="author" content="jgkfdsa">
+    
+    <!-- Completely eliminate flash of wrong theme -->
+    <script>
+        (function() {
+            const THEME_KEY = "REDEFINE-THEME-STATUS";
+            const DARK = "dark", LIGHT = "light";
+            
+            // Get preferred theme
+            function getTheme() {
+                try {
+                    const saved = localStorage.getItem(THEME_KEY);
+                    if (saved) {
+                        const { isDark } = JSON.parse(saved);
+                        return isDark ? DARK : LIGHT;
+                    }
+                } catch (e) {}
+                
+                return matchMedia("(prefers-color-scheme: dark)").matches ? DARK : LIGHT;
+            }
+            
+            // Apply theme to document
+            function applyTheme(theme) {
+                const isDark = theme === DARK;
+                const root = document.documentElement;
+                
+                // Set classes for compatibility
+                root.classList.add(theme);
+                root.classList.remove(isDark ? LIGHT : DARK);
+                root.style.colorScheme = theme;
+            }
+            
+            // Initial application
+            const theme = getTheme();
+            applyTheme(theme);
+            
+            // Listen for system preference changes
+            matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ({ matches }) => {
+                // Only update if using system preference (no localStorage entry)
+                if (!localStorage.getItem(THEME_KEY)) {
+                    applyTheme(matches ? DARK : LIGHT);
+                }
+            });
+            
+            // Set body classes ASAP (before DOMContentLoaded)
+            (function() {
+                const addBodyClass = () => {
+                    const b = document.body;
+                    if (!b) return false;
+                    b.classList.add(theme + "-mode");
+                    return true;
+                };
+
+                // Try immediately
+                if (addBodyClass()) return;
+
+                // Observe until body exists
+                const mo = new MutationObserver(() => {
+                    if (addBodyClass()) mo.disconnect();
+                });
+                mo.observe(document.documentElement, { childList: true, subtree: true });
+            })();
+        })();
+    </script>
+    
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://jgkfdsa.github.io/2026/02/28/kafka-底层原理/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+    
+        
+        <meta name="description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="底层原理">
+<meta property="og:url" content="https://jgkfdsa.github.io/2026/02/28/kafka-%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://jgkfdsa.github.io/images/redefine-og.webp">
+<meta property="article:published_time" content="2026-02-28T09:53:37.396Z">
+<meta property="article:modified_time" content="2026-02-28T09:53:37.396Z">
+<meta property="article:author" content="jgkfdsa">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jgkfdsa.github.io/images/redefine-og.webp">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="/images/redefine-favicon.svg" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/redefine-favicon.svg">
+    <meta name="theme-color" content="#A31F34">
+    <link rel="shortcut icon" href="/images/redefine-favicon.svg">
+    <!--- Page Info-->
+    
+    <title>
+        
+            底层原理 | Theme Redefine
+        
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/css/build/tailwind.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/GeistMono/geist-mono.css">
+
+    
+<link rel="stylesheet" href="/fonts/Geist/geist.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+    
+    
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"jgkfdsa.github.io","root":"/","language":"zh-CN","path":"search.json"};
+    window.theme = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"delete_mask":false,"title_alignment":"left","headings_top_spacing":{"h1":"3.2rem","h2":"2.4rem","h3":"1.9rem","h4":"1.6rem","h5":"1.4rem","h6":"1.3rem"}},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":false,"auto":false,"list":[]},"code_block":{"copy":true,"style":"mac","highlight_theme":{"light":"github","dark":"vs2015"},"font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":{"enable":false,"default":"cc_by_nc_sa"},"lazyload":true,"pangu_js":false,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#A31F34","secondary":null,"default_mode":"light"},"global":{"fonts":{"chinese":{"enable":false,"family":null,"url":null},"english":{"enable":false,"family":null,"url":null},"title":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":false},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":false,"site_pv":false,"site_uv":false,"post_pv":false},"single_page":true,"preloader":{"enable":false,"custom_message":null},"side_tools":{"gear_rotation":true,"auto_expand":false},"open_graph":{"enable":true,"image":"/images/redefine-og.webp","description":"Hexo Theme Redefine, Redefine Your Hexo Journey."},"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/images/wallhaven-wqery6-light.webp","dark":"/images/wallhaven-wqery6-dark.webp"},"title":"Theme Redefine","subtitle":{"text":[],"hitokoto":{"enable":false,"show_author":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":false,"style":"default","links":[],"qrs":[]}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":true,"version":"11.4.1","theme":{"light":"default","dark":"dark"}}},"version":"2.9.0","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Categories":{"path":"/categories/","icon":"fa-solid fa-folder"},"Github":{"path":"https://github.com/jgkfdsa/blog-source","icon":"fa-brands fa-github"}},"search":{"enable":true,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"blur","masonry":{"batch_size":12,"initial_batch_size":24}},"home":{"sidebar":{"enable":true,"position":"left","first_item":"menu","announcement":null,"show_on_mobile":true,"links":null},"article_date_format":"auto","excerpt_length":200,"categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footer":{"runtime":true,"icon":"<i class=\"fa-solid fa-heart fa-beat\" style=\"--fa-animation-duration: 0.5s; color: #f54545\"></i>","start":"2026/01/08 10:45:14","statistics":true,"customize":null,"icp":{"enable":false,"number":null,"url":null}},"footerStart":"2026/01/08 10:45:14","mermaid":{"style":{"light":"default","dark":"dark"}}};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.i18n = {"search":"站内搜索您需要的内容...","toc":"目录","prev":"上一页","next":"下一页","prev_posts":"上一篇","next_posts":"下一篇","page":"第 %d 页","recent_posts":"最新文章","share":"分享","powered_by":"由 %s 驱动","theme":"主题","rss_feed":"RSS Feed","category":"分类","categories":"分类","tag":"标签","tags":"标签","post":"文章","posts":"文章","tagcloud":"标签云","comment":"评论","comments":"评论","top":"置顶","sticky":"置顶","go-back-home":"回到首页","masonry_loading":"照片加载中...","image_viewer":"图片查看器","close":"关闭","exif":{"title":"EXIF","cards":{"camera":"相机","lens":"镜头","exposure":"曝光","other":"其他"},"fields":{"make":"品牌","model":"机型","date_taken":"拍摄时间","lens_model":"镜头","focal_length":"焦距","focus_mode":"对焦模式","shutter":"快门","aperture":"光圈","iso":"感光度","exposure_program":"曝光程序","exposure_compensation":"曝光补偿","metering_mode":"测光模式","flash":"闪光灯","white_balance":"白平衡","latitude":"纬度","longitude":"经度","altitude":"海拔"},"status":{"loading":"加载中...","no_exif":"无 EXIF 信息","library_missing":"EXIF 库未加载","image_source_missing":"图片地址不可用","unavailable":"EXIF 不可用（可能被 CORS 阻止或缺少元数据）","flag_unavailable":"EXIF 不可用"}},"home":"首页","archive":"归档","archives":"归档","about":"关于","links":"链接","link":"链接","friends":"友情链接","friend":"友情链接","timeline":"时间轴","shuoshuo":"说说","bookmarks":"书签","site_uv":"访问人数","site_pv":"总访问量","read_more":"阅读全文","wordcount":"字","min2read":"分钟","changelog":"更新日志","status":"状态","runtime":"博客已运行","days":"天","hours":"小时","minutes":"分钟","seconds":"秒","optimized_by":"并由 Evan 进行优化","rights":"版权所有","site_posts":"共撰写了 %s 篇文章","site_wordcount":"共 %s 字","copyright":{"title":"标题","author":"作者","link":"链接","create_time":"创建于","update_time":"更新于","license_title":"版权声明","license_content":"本文章采用 %s 进行许可。","all_rights_reserved":"版权所有 &#169 %s，禁止转载。","public_domain":"本文为公有领域作品，可自由转载、引用。"},"ago":{"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"},"create_time":"创建","update_time":"更新","expired":"这篇文章最后更新于 %s 天前，内容可能已经过时。"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+	<div class="progress-bar-container">
+	
+
+	
+	<span class="pjax-progress-bar"></span>
+	<!--        <span class="swup-progress-icon">-->
+	<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+	<!--        </span>-->
+	
+</div>
+
+<main class="page-container" id="swup">
+
+	
+
+	<div class="main-content-container flex flex-col justify-between min-h-dvh">
+		<div class="main-content-header">
+			<header class="navbar-container px-6 md:px-12">
+    <div class="navbar-content transition-navbar ">
+        <div class="left">
+            
+            <a class="logo-title" href="/">
+                
+                Theme Redefine
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/categories/"
+                                        >
+                                    <i class="fa-solid fa-folder fa-fw"></i>
+                                    分类
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   target="_blank" rel="noopener" href="https://github.com/jgkfdsa/blog-source"
+                                        >
+                                    <i class="fa-brands fa-github fa-fw"></i>
+                                    GITHUB
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                    
+                        <li class="navbar-item search search-popup-trigger">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-dvh w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/categories/"
+                        >
+                            <span>
+                                分类
+                            </span>
+                            
+                                <i class="fa-solid fa-folder fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           target="_blank" rel="noopener" href="https://github.com/jgkfdsa/blog-source"
+                        >
+                            <span>
+                                GITHUB
+                            </span>
+                            
+                                <i class="fa-brands fa-github fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+
+            
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">0</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">8</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">40</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+		</div>
+
+		<div class="main-content-body transition-fade-up">
+			
+
+			<div class="main-content">
+				<div class="post-page-container flex relative justify-between box-border w-full h-full">
+	<div class="article-content-container">
+
+		<div class="article-title relative w-full">
+			
+			<div class="w-full flex items-center pt-6 justify-start">
+				<h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3">底层原理</h1>
+			</div>
+			
+		</div>
+
+		
+		<div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+			<div class="avatar w-[46px] h-[46px] shrink-0 rounded-medium border border-border-color p-px">
+				<img src="/images/redefine-avatar.svg">
+			</div>
+			<div class="info flex flex-col justify-between">
+				<div class="author flex items-center">
+					<span class="name text-default-text-color text-lg font-semibold">jgkfdsa</span>
+					
+				</div>
+				<div class="meta-info">
+					<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2026-02-28 17:53:37</span>
+        <span class="mobile">2026-02-28 17:53:37</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2026-02-28 17:53:37</span>
+            <span class="mobile">2026-02-28 17:53:37</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/kafka/">kafka</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+
+    
+    
+    
+    
+</div>
+
+				</div>
+			</div>
+		</div>
+		
+
+		
+
+
+		<div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+			<h1 id="顺序读"><a href="#顺序读" class="headerlink" title="顺序读"></a>顺序读</h1><ol>
+<li>每个 Partition 是一个不可变的、有序的日志。消息按追加顺序分配递增的 offset（偏移量）。Consumer 从低 offset 向高 offset 顺序拉取，不会跳过或乱序读取。</li>
+<li>Kafka Consumer 是单线程拉取 + 单线程处理模型（除非你手动并发）。</li>
+<li>只要业务上需要保序的事件共享同一个 key（如用户 ID、订单 ID），它们就会进入同一 Partition，从而被顺序消费。</li>
+</ol>
+<blockquote>
+<p>在单个 Partition（分区）内保证消息的顺序性，但不保证跨 Partition 或跨 Topic 的全局顺序。</p>
+</blockquote>
+<h1 id="快"><a href="#快" class="headerlink" title="快"></a>快</h1><h2 id="顺序写磁盘"><a href="#顺序写磁盘" class="headerlink" title="顺序写磁盘"></a>顺序写磁盘</h2><ul>
+<li>Kafka 将消息追加写入（append-only） 到日志文件末尾，不进行随机写或更新。</li>
+</ul>
+<h2 id="零拷贝"><a href="#零拷贝" class="headerlink" title="零拷贝"></a>零拷贝</h2><ul>
+<li>消费者拉取消息时，Kafka 使用 sendfile() 系统调用（Linux）。数据从磁盘文件 → 内核 Page Cache → 网卡缓冲区，全程无需拷贝到用户空间，也无需 CPU 参与数据搬运。</li>
+</ul>
+<h2 id="批量处理"><a href="#批量处理" class="headerlink" title="批量处理"></a>批量处理</h2><ul>
+<li>多条消息攒成一个批次（batch）再发送和拉取，减少网络请求次数，网络 RTT（往返延迟）被摊薄。</li>
+</ul>
+<h2 id="高效压缩"><a href="#高效压缩" class="headerlink" title="高效压缩"></a>高效压缩</h2><ul>
+<li>Producer 可对整个 batch 进行压缩，Consumer 拉取 Broker 后解压。减少磁盘 I&#x2F;O 和存储成本，减少网络带宽占用（压缩比可达 3:1～5:1）。</li>
+</ul>
+<h1 id="日志"><a href="#日志" class="headerlink" title="日志"></a>日志</h1><h2 id="基本单位：Partition"><a href="#基本单位：Partition" class="headerlink" title="基本单位：Partition"></a>基本单位：Partition</h2><ul>
+<li>每个 Topic 被划分为多个 Partition，每个 Partition 是一个独立的、有序的、不可变的消息日志。</li>
+<li>日志中的每条消息按写入顺序分配一个 64 位单调递增的 offset（偏移量），作为唯一标识。</li>
+<li>Partition 是 Kafka 并行处理和水平扩展的基本单元。</li>
+</ul>
+<h2 id="物理存储：Segment（段文件）"><a href="#物理存储：Segment（段文件）" class="headerlink" title="物理存储：Segment（段文件）"></a>物理存储：Segment（段文件）</h2><ul>
+<li>为了避免单个日志文件无限增长，Kafka 将每个 Partition 的日志切分为多个 Segment</li>
+<li>文件采用紧凑的二进制格式，支持批量（Record Batch）存储：</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>文件类型</th>
+<th>命名示例</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>.log</code></td>
+<td><code>00000000000000000000.log</code></td>
+<td>存储实际消息数据（二进制格式）</td>
+</tr>
+<tr>
+<td><code>.index</code></td>
+<td><code>00000000000000000000.index</code></td>
+<td>偏移量索引：映射 offset → 物理位置（position in .log）</td>
+</tr>
+<tr>
+<td><code>.timeindex</code></td>
+<td><code>00000000000000000000.timeindex</code></td>
+<td>时间戳索引：映射 timestamp → offset</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>✅ 文件名以该 Segment 的起始 offset 命名（如 00000000000000000000 表示从 offset 0 开始）。</p>
+</blockquote>
+<p>当满足以下任一条件时，创建新 Segment：</p>
+<ul>
+<li>大小达到阈值：默认 log.segment.bytes &#x3D; 1GB</li>
+<li>时间超过阈值：默认 log.roll.ms &#x3D; 7 天（即使未满 1GB 也会滚动）</li>
+</ul>
+<h2 id="索引"><a href="#索引" class="headerlink" title="索引"></a>索引</h2><p><strong>1. Offset 索引</strong></p>
+<ul>
+<li>默认每写入 4KB 数据，建立一条索引项</li>
+<li>通过二分查找 + 顺序扫描找到目标<br><strong>2. 时间戳索引</strong></li>
+<li>用于支持 offsetsForTimes() API（根据时间查 offset）。</li>
+<li>同样采用稀疏索引，默认每 4KB 建立一条 (timestamp, relativeOffset) 索引。</li>
+</ul>
+<h2 id="清理策略"><a href="#清理策略" class="headerlink" title="清理策略"></a>清理策略</h2><p><strong>1. 基于时间&#x2F;大小的删除（Delete Policy） ← 默认</strong></p>
+<ul>
+<li>超过保留期限或大小的 整个 Segment 文件被删除。</li>
+<li>log.retention.hours（默认 168 小时 &#x3D; 7 天）</li>
+<li>log.retention.bytes（单个 Partition 最大字节数）<br><strong>2. 日志压缩（Log Compaction） ← 适用于状态变更场景</strong></li>
+<li>目标：为每个 key 只保留最新 value，类似“快照”。</li>
+<li>适用场景：用户资料更新、配置变更等。</li>
+<li>清理过程：<ol>
+<li>后台 Cleaner 线程扫描日志。</li>
+<li>对每个 key，保留最后一个出现的 record。</li>
+<li>旧版本 record 被逻辑删除（Segment 重写后丢弃）。</li>
+</ol>
+</li>
+</ul>
+<h1 id="消费者平衡"><a href="#消费者平衡" class="headerlink" title="消费者平衡"></a>消费者平衡</h1><h2 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h2><ul>
+<li>消费者加入组	新消费者启动并订阅相同 Topic</li>
+<li>消费者离开组	主动关闭（consumer.close()）、进程崩溃、网络断开</li>
+<li>消费者心跳超时	未在 session.timeout.ms 内发送心跳（默认 45s）</li>
+<li>消费处理超时	单次 poll() 处理时间超过 max.poll.interval.ms（默认 5 分钟）</li>
+<li>Topic 元数据变更	分区数增加、订阅的 Topic 列表变化</li>
+</ul>
+<h2 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h2><p><strong>1：选举 Group Coordinator</strong></p>
+<ul>
+<li>每个 Consumer Group 由集群中一个 Broker 担任 Coordinator。</li>
+<li>消费者通过 findCoordinator 请求定位它。</li>
+</ul>
+<p><strong>2：JoinGroup 阶段</strong></p>
+<ul>
+<li>所有消费者向 Coordinator 发送 JoinGroup 请求。</li>
+<li>Coordinator 选择一个消费者作为 Leader（通常是第一个加入的）。</li>
+<li>返回成员列表给 Leader，其他成员收到空响应。</li>
+</ul>
+<p><strong>3：分区分配（由 Leader 执行）</strong></p>
+<ul>
+<li>Leader 根据配置的分区分配策略计算分区分配方案。</li>
+<li>将分配结果通过 SyncGroup 请求发送给 Coordinator。</li>
+</ul>
+<p><strong>4：SyncGroup 阶段</strong></p>
+<ul>
+<li>Coordinator 将分配结果广播给所有消费者。</li>
+<li>每个消费者得知自己负责哪些 Partition。</li>
+</ul>
+<p><strong>5：开始消费</strong></p>
+<ul>
+<li>消费者根据新分配的分区，从上次提交的 offset 开始拉取消息。<blockquote>
+<p>🔄 整个过程是同步阻塞的：Rebalance 期间，整个消费者组停止消费。</p>
+</blockquote>
+</li>
+</ul>
+<div class="callout callout--titled red mb-4 rounded-small shadow-redefine-flat bg-(--callout-bg-color) p-3 pl-1 relative flex flex-row gap-2"><div role="none" class="rounded-full self-stretch w-0.5 bg-(--callout-primary-color) shrink-0 opacity-60"></div><div class="flex flex-col gap-2"><div class="callout__title flex items-center gap-2 font-semibold tracking-tight">为什么不让 broker 负责分配</div><div class="callout__content markdown-body flex-1 min-w-0"><p>Broker 轻量化，不承担业务逻辑，专注 I&#x2F;O<br>策略灵活可扩展，客户端可以自主实现或决定使用何种策略</p></div></div></div>
+
+<h2 id="分配策略"><a href="#分配策略" class="headerlink" title="分配策略"></a>分配策略</h2><table>
+<thead>
+<tr>
+<th>策略</th>
+<th>特点</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>RangeAssignor（默认）</td>
+<td>按 Partition 范围分配，可能不均</td>
+<td>分区数少、消费者数整除分区数</td>
+</tr>
+<tr>
+<td>RoundRobinAssignor</td>
+<td>轮询分配，更均匀</td>
+<td>通用场景</td>
+</tr>
+<tr>
+<td>StickyAssignor（推荐）</td>
+<td>尽量保持原有分配，最小化变动</td>
+<td>减少 Rebalance 开销</td>
+</tr>
+<tr>
+<td>CooperativeStickyAssignor（Kafka 2.3+）</td>
+<td>增量式 Rebalance，支持部分消费者继续消费</td>
+<td>高可用要求高的场景</td>
+</tr>
+</tbody></table>
+<h2 id="再平衡的代价"><a href="#再平衡的代价" class="headerlink" title="再平衡的代价"></a>再平衡的代价</h2><ul>
+<li>消费停顿：整个组在 Rebalance 期间无法消费消息</li>
+<li>重复消费：分区被重新分配后，可能从上次提交的 offset 重读</li>
+<li>状态丢失：若消费者维护本地状态（如缓存），迁移后需重建</li>
+<li>资源浪费：频繁 Rebalance 导致大量网络、CPU 开销</li>
+<li>“惊群效应”：多个消费者同时失效 → 同时触发 Rebalance → Coordinator 过载</li>
+</ul>
+<h1 id="集群"><a href="#集群" class="headerlink" title="集群"></a>集群</h1><h2 id="核心角色"><a href="#核心角色" class="headerlink" title="核心角色"></a>核心角色</h2><p><strong>1. Broker（普通节点）</strong></p>
+<ul>
+<li>存储分配给它的 Partition 副本（Leader 或 Follower）。</li>
+<li>处理 Producer 的写入请求（仅 Leader 分区）。</li>
+<li>处理 Consumer 的拉取请求（仅 Leader 分区）。</li>
+<li>与其他 Broker 同步 Partition 的副本数据（Follower 主动 Fetch）。<br><strong>2. Controller（控制器，KRaft 引入）</strong></li>
+<li>集群中唯一的 Active Controller（由所有 Broker 选举产生）。</li>
+<li>职责包括：<ul>
+<li>监听 Broker 上下线（通过 ZK watch 或 KRaft Raft log）</li>
+<li>管理 Partition Leader 选举</li>
+<li>触发首选副本选择</li>
+<li>处理 Topic 创建&#x2F;删除&#x2F;分区扩容等元数据变更</li>
+</ul>
+</li>
+</ul>
+<div class="callout callout--titled red mb-4 rounded-small shadow-redefine-flat bg-(--callout-bg-color) p-3 pl-1 relative flex flex-row gap-2"><div role="none" class="rounded-full self-stretch w-0.5 bg-(--callout-primary-color) shrink-0 opacity-60"></div><div class="flex flex-col gap-2"><div class="callout__title flex items-center gap-2 font-semibold tracking-tight">最小集群规模</div><div class="callout__content markdown-body flex-1 min-w-0"><p>生产环境建议 ≥ 3 个 Broker（保证副本容错）<br>KRaft 模式下 Controller Quorum 也需 ≥ 3 节点（奇数）</p></div></div></div>
+
+<h2 id="数据分布与副本机制（Replication）"><a href="#数据分布与副本机制（Replication）" class="headerlink" title="数据分布与副本机制（Replication）"></a>数据分布与副本机制（Replication）</h2><p><strong>1. Partition 分布策略</strong></p>
+<ul>
+<li>创建 Topic 时，Kafka 尽量将 Partition 均匀分布到各 Broker。</li>
+<li>副本分配遵循：<ul>
+<li>同一分区的多个副本不在同一 Broker</li>
+<li>尽量跨机架（通过 broker.rack 配置）</li>
+</ul>
+</li>
+</ul>
+<p><strong>2. ISR（In-Sync Replicas）机制</strong></p>
+<ul>
+<li>Leader：处理读写</li>
+<li>Follower：从 Leader 拉取数据</li>
+<li>ISR 列表：与 Leader 保持同步的副本集合（由 replica.lag.time.max.ms 控制）</li>
+<li>只有 ISR 中的副本才有资格被选为新 Leader</li>
+</ul>
+<p><strong>3. 故障恢复流程</strong></p>
+<ol>
+<li>Broker 宕机 → Controller 检测到失联</li>
+<li>Controller 从 ISR 中选举新 Leader</li>
+<li>Producer&#x2F;Consumer 自动重试，透明切换</li>
+</ol>
+
+		</div>
+
+		
+
+		
+
+		
+
+		
+		<div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+			
+			<div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="prev" rel="prev" href="/2026/02/28/%E5%9C%BA%E6%99%AF-%E9%99%90%E6%B5%81/">
+					<span class="left arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-left"></i>
+					</span>
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">限流</span>
+						<span class="post-nav-item">上一篇</span>
+					</span>
+				</a>
+			</div>
+			
+			
+			<div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="next" rel="next" href="/2026/02/28/network-http/">
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">http</span>
+						<span class="post-nav-item">下一篇</span>
+					</span>
+					<span class="right arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-right"></i>
+					</span>
+				</a>
+			</div>
+			
+		</div>
+		
+
+
+		
+	</div>
+
+	
+	<div class="toc-content-container">
+		<div class="post-toc-wrap">
+	<div class="post-toc">
+		<div class="toc-title">目录</div>
+		<div class="page-title">底层原理</div>
+		<ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A1%BA%E5%BA%8F%E8%AF%BB"><span class="nav-text">顺序读</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BF%AB"><span class="nav-text">快</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%A1%BA%E5%BA%8F%E5%86%99%E7%A3%81%E7%9B%98"><span class="nav-text">顺序写磁盘</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%B6%E6%8B%B7%E8%B4%9D"><span class="nav-text">零拷贝</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%B9%E9%87%8F%E5%A4%84%E7%90%86"><span class="nav-text">批量处理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AB%98%E6%95%88%E5%8E%8B%E7%BC%A9"><span class="nav-text">高效压缩</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%97%A5%E5%BF%97"><span class="nav-text">日志</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E5%8D%95%E4%BD%8D%EF%BC%9APartition"><span class="nav-text">基本单位：Partition</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%89%A9%E7%90%86%E5%AD%98%E5%82%A8%EF%BC%9ASegment%EF%BC%88%E6%AE%B5%E6%96%87%E4%BB%B6%EF%BC%89"><span class="nav-text">物理存储：Segment（段文件）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B4%A2%E5%BC%95"><span class="nav-text">索引</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B8%85%E7%90%86%E7%AD%96%E7%95%A5"><span class="nav-text">清理策略</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B6%88%E8%B4%B9%E8%80%85%E5%B9%B3%E8%A1%A1"><span class="nav-text">消费者平衡</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%9F%E5%9B%A0"><span class="nav-text">原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%B5%81%E7%A8%8B"><span class="nav-text">流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E9%85%8D%E7%AD%96%E7%95%A5"><span class="nav-text">分配策略</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%8D%E5%B9%B3%E8%A1%A1%E7%9A%84%E4%BB%A3%E4%BB%B7"><span class="nav-text">再平衡的代价</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4"><span class="nav-text">集群</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E8%A7%92%E8%89%B2"><span class="nav-text">核心角色</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%88%86%E5%B8%83%E4%B8%8E%E5%89%AF%E6%9C%AC%E6%9C%BA%E5%88%B6%EF%BC%88Replication%EF%BC%89"><span class="nav-text">数据分布与副本机制（Replication）</span></a></li></ol></li></ol>
+
+	</div>
+</div>
+	</div>
+	
+</div>
+
+			</div>
+
+			
+		</div>
+
+		<div class="main-content-footer">
+			<footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+              <span>2026</span>
+              -
+            
+            2026&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">jgkfdsa</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共撰写了 40 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.9.0</a></span>
+        </div>
+        
+        
+            <div>
+                博客已运行 <span class="odometer" id="runtime_days" ></span> 天 <span class="odometer" id="runtime_hours"></span> 小时 <span class="odometer" id="runtime_minutes"></span> 分钟 <span class="odometer" id="runtime_seconds"></span> 秒
+            </div>
+        
+        
+            <script data-swup-reload-script>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+		</div>
+	</div>
+
+	
+	<div class="post-tools">
+		<div class="post-tools-container">
+	<ul class="article-tools-list">
+		<!-- TOC aside toggle -->
+		
+		<li class="right-bottom-tools page-aside-toggle">
+			<i class="fa-regular fa-outdent"></i>
+		</li>
+		
+
+		<!-- go comment -->
+		
+	</ul>
+</div>
+	</div>
+	
+
+	<div class="right-side-tools-container">
+		<div class="side-tools-container">
+	<ul class="hidden-tools-list">
+		<li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-plus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-minus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+			<i class="fa-regular fa-moon"></i>
+		</li>
+
+		<!-- rss -->
+		
+
+		
+
+		<li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+			<i class="fa-regular fa-arrow-down"></i>
+		</li>
+	</ul>
+
+	<ul class="visible-tools-list">
+		<li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+			<i class="fa-regular fa-cog fa-spin"></i>
+		</li>
+		
+		<li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+			<i class="arrow-up fas fa-arrow-up"></i>
+			<span class="percent"></span>
+		</li>
+		
+		
+	</ul>
+</div>
+	</div>
+
+	<div class="image-viewer-container" role="dialog" aria-modal="true" aria-label="图片查看器">
+	<button class="image-viewer-close" type="button" aria-label="关闭">
+		<i class="fa-solid fa-xmark"></i>
+	</button>
+	<button class="image-viewer-prev" type="button" aria-label="上一页">
+		<i class="fa-solid fa-chevron-left"></i>
+	</button>
+	<div class="image-viewer-frame">
+		<img src="" alt="">
+	</div>
+	<div class="image-viewer-exif-panel hidden absolute left-1/2 bottom-20 -translate-x-1/2 w-[min(92vw,420px)] max-h-[60vh] overflow-hidden rounded-2xl bg-background-color-transparent-80 p-4 text-left shadow-redefine-flat backdrop-blur-md" role="dialog" aria-label="EXIF" aria-hidden="true">
+		<div class="flex items-center justify-between mb-3">
+			<span class="text-sm font-semibold text-first-text-color">EXIF</span>
+			<button class="image-viewer-exif-close flex h-8 w-8 items-center justify-center rounded-full bg-background-color-transparent-80 text-first-text-color transition hover:bg-background-color-transparent-40" type="button" aria-label="关闭">
+				<i class="fa-solid fa-xmark text-[0.65rem]"></i>
+			</button>
+		</div>
+		<div class="image-viewer-exif-cards grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-1 scrollbar-hide"></div>
+		<template class="image-viewer-exif-card-template">
+			<div class="rounded-lg bg-background-color-transparent-40 px-3 py-2">
+				<div class="image-viewer-exif-card-header flex items-center gap-2 mb-1">
+					<i class="image-viewer-exif-card-icon fa-solid fa-circle-info text-xs text-third-text-color"></i>
+					<div class="image-viewer-exif-card-title text-xs font-semibold text-first-text-color"></div>
+				</div>
+				<div class="image-viewer-exif-card-items flex flex-col gap-1"></div>
+			</div>
+		</template>
+	</div>
+	<button class="image-viewer-exif-toggle flex items-center gap-2 hidden absolute left-1/2 bottom-6 -translate-x-1/2 rounded-full border border-border-color bg-background-color-transparent-80 px-4 py-2 text-first-text-color backdrop-blur-md transition hover:bg-background-color-transparent-40" type="button" aria-label="EXIF" aria-expanded="false">
+		<i class="fa-solid fa-circle-info text-xs"></i>
+		<span class="text-xs font-semibold uppercase tracking-wider">EXIF</span>
+	</button>
+	<button class="image-viewer-next" type="button" aria-label="下一页">
+		<i class="fa-solid fa-chevron-right"></i>
+	</button>
+</div>
+
+
+	
+	<div class="search-pop-overlay">
+	<div class="popup search-popup">
+		<div class="search-header">
+			<span class="search-input-field-pre">
+				<i class="fa-solid fa-keyboard"></i>
+			</span>
+			<div class="search-input-container">
+				<input autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="站内搜索您需要的内容..." spellcheck="false" type="search" class="search-input">
+			</div>
+			<span class="popup-btn-close">
+				<i class="fa-solid fa-times"></i>
+			</span>
+		</div>
+		<div id="search-result">
+			<div id="no-result">
+				<i class="fa-solid fa-spinner fa-spin-pulse fa-5x fa-fw"></i>
+			</div>
+		</div>
+	</div>
+</div>
+	
+
+</main>
+
+
+
+<script src="/js/build/libs/Swup.min.js"></script>
+
+<script src="/js/build/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/build/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    window.swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+
+    window.dispatchEvent(
+        new CustomEvent("redefine:swup:ready", {
+            detail: {
+                swup: window.swup,
+            },
+        }),
+    );
+</script>
+
+
+
+
+	
+<script src="/js/build/main.js" type="module"></script>
+
+
+
+    
+<script src="/js/build/libs/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+    
+        
+<script src="/js/build/libs/mermaid.min.js"></script>
+
+    
+
+
+
+
+
+
+
+<script src="/js/build/libs/moment-with-locales.min.js" data-swup-reload-script=""></script>
+
+
+
+	
+</body>
+
+</html>

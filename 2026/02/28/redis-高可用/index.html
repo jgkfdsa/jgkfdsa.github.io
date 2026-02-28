@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    
+    <meta name="author" content="jgkfdsa">
+    
+    <!-- Completely eliminate flash of wrong theme -->
+    <script>
+        (function() {
+            const THEME_KEY = "REDEFINE-THEME-STATUS";
+            const DARK = "dark", LIGHT = "light";
+            
+            // Get preferred theme
+            function getTheme() {
+                try {
+                    const saved = localStorage.getItem(THEME_KEY);
+                    if (saved) {
+                        const { isDark } = JSON.parse(saved);
+                        return isDark ? DARK : LIGHT;
+                    }
+                } catch (e) {}
+                
+                return matchMedia("(prefers-color-scheme: dark)").matches ? DARK : LIGHT;
+            }
+            
+            // Apply theme to document
+            function applyTheme(theme) {
+                const isDark = theme === DARK;
+                const root = document.documentElement;
+                
+                // Set classes for compatibility
+                root.classList.add(theme);
+                root.classList.remove(isDark ? LIGHT : DARK);
+                root.style.colorScheme = theme;
+            }
+            
+            // Initial application
+            const theme = getTheme();
+            applyTheme(theme);
+            
+            // Listen for system preference changes
+            matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ({ matches }) => {
+                // Only update if using system preference (no localStorage entry)
+                if (!localStorage.getItem(THEME_KEY)) {
+                    applyTheme(matches ? DARK : LIGHT);
+                }
+            });
+            
+            // Set body classes ASAP (before DOMContentLoaded)
+            (function() {
+                const addBodyClass = () => {
+                    const b = document.body;
+                    if (!b) return false;
+                    b.classList.add(theme + "-mode");
+                    return true;
+                };
+
+                // Try immediately
+                if (addBodyClass()) return;
+
+                // Observe until body exists
+                const mo = new MutationObserver(() => {
+                    if (addBodyClass()) mo.disconnect();
+                });
+                mo.observe(document.documentElement, { childList: true, subtree: true });
+            })();
+        })();
+    </script>
+    
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://jgkfdsa.github.io/2026/02/28/redis-高可用/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+    
+        
+        <meta name="description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="高可用">
+<meta property="og:url" content="https://jgkfdsa.github.io/2026/02/28/redis-%E9%AB%98%E5%8F%AF%E7%94%A8/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://jgkfdsa.github.io/images/redefine-og.webp">
+<meta property="article:published_time" content="2026-02-28T09:53:37.396Z">
+<meta property="article:modified_time" content="2026-02-28T09:53:37.396Z">
+<meta property="article:author" content="jgkfdsa">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jgkfdsa.github.io/images/redefine-og.webp">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="/images/redefine-favicon.svg" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/redefine-favicon.svg">
+    <meta name="theme-color" content="#A31F34">
+    <link rel="shortcut icon" href="/images/redefine-favicon.svg">
+    <!--- Page Info-->
+    
+    <title>
+        
+            高可用 | Theme Redefine
+        
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/css/build/tailwind.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/GeistMono/geist-mono.css">
+
+    
+<link rel="stylesheet" href="/fonts/Geist/geist.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+    
+    
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"jgkfdsa.github.io","root":"/","language":"zh-CN","path":"search.json"};
+    window.theme = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"delete_mask":false,"title_alignment":"left","headings_top_spacing":{"h1":"3.2rem","h2":"2.4rem","h3":"1.9rem","h4":"1.6rem","h5":"1.4rem","h6":"1.3rem"}},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":false,"auto":false,"list":[]},"code_block":{"copy":true,"style":"mac","highlight_theme":{"light":"github","dark":"vs2015"},"font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":{"enable":false,"default":"cc_by_nc_sa"},"lazyload":true,"pangu_js":false,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#A31F34","secondary":null,"default_mode":"light"},"global":{"fonts":{"chinese":{"enable":false,"family":null,"url":null},"english":{"enable":false,"family":null,"url":null},"title":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":false},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":false,"site_pv":false,"site_uv":false,"post_pv":false},"single_page":true,"preloader":{"enable":false,"custom_message":null},"side_tools":{"gear_rotation":true,"auto_expand":false},"open_graph":{"enable":true,"image":"/images/redefine-og.webp","description":"Hexo Theme Redefine, Redefine Your Hexo Journey."},"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/images/wallhaven-wqery6-light.webp","dark":"/images/wallhaven-wqery6-dark.webp"},"title":"Theme Redefine","subtitle":{"text":[],"hitokoto":{"enable":false,"show_author":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":false,"style":"default","links":[],"qrs":[]}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":true,"version":"11.4.1","theme":{"light":"default","dark":"dark"}}},"version":"2.9.0","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Categories":{"path":"/categories/","icon":"fa-solid fa-folder"},"Github":{"path":"https://github.com/jgkfdsa/blog-source","icon":"fa-brands fa-github"}},"search":{"enable":true,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"blur","masonry":{"batch_size":12,"initial_batch_size":24}},"home":{"sidebar":{"enable":true,"position":"left","first_item":"menu","announcement":null,"show_on_mobile":true,"links":null},"article_date_format":"auto","excerpt_length":200,"categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footer":{"runtime":true,"icon":"<i class=\"fa-solid fa-heart fa-beat\" style=\"--fa-animation-duration: 0.5s; color: #f54545\"></i>","start":"2026/01/08 10:45:14","statistics":true,"customize":null,"icp":{"enable":false,"number":null,"url":null}},"footerStart":"2026/01/08 10:45:14","mermaid":{"style":{"light":"default","dark":"dark"}}};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.i18n = {"search":"站内搜索您需要的内容...","toc":"目录","prev":"上一页","next":"下一页","prev_posts":"上一篇","next_posts":"下一篇","page":"第 %d 页","recent_posts":"最新文章","share":"分享","powered_by":"由 %s 驱动","theme":"主题","rss_feed":"RSS Feed","category":"分类","categories":"分类","tag":"标签","tags":"标签","post":"文章","posts":"文章","tagcloud":"标签云","comment":"评论","comments":"评论","top":"置顶","sticky":"置顶","go-back-home":"回到首页","masonry_loading":"照片加载中...","image_viewer":"图片查看器","close":"关闭","exif":{"title":"EXIF","cards":{"camera":"相机","lens":"镜头","exposure":"曝光","other":"其他"},"fields":{"make":"品牌","model":"机型","date_taken":"拍摄时间","lens_model":"镜头","focal_length":"焦距","focus_mode":"对焦模式","shutter":"快门","aperture":"光圈","iso":"感光度","exposure_program":"曝光程序","exposure_compensation":"曝光补偿","metering_mode":"测光模式","flash":"闪光灯","white_balance":"白平衡","latitude":"纬度","longitude":"经度","altitude":"海拔"},"status":{"loading":"加载中...","no_exif":"无 EXIF 信息","library_missing":"EXIF 库未加载","image_source_missing":"图片地址不可用","unavailable":"EXIF 不可用（可能被 CORS 阻止或缺少元数据）","flag_unavailable":"EXIF 不可用"}},"home":"首页","archive":"归档","archives":"归档","about":"关于","links":"链接","link":"链接","friends":"友情链接","friend":"友情链接","timeline":"时间轴","shuoshuo":"说说","bookmarks":"书签","site_uv":"访问人数","site_pv":"总访问量","read_more":"阅读全文","wordcount":"字","min2read":"分钟","changelog":"更新日志","status":"状态","runtime":"博客已运行","days":"天","hours":"小时","minutes":"分钟","seconds":"秒","optimized_by":"并由 Evan 进行优化","rights":"版权所有","site_posts":"共撰写了 %s 篇文章","site_wordcount":"共 %s 字","copyright":{"title":"标题","author":"作者","link":"链接","create_time":"创建于","update_time":"更新于","license_title":"版权声明","license_content":"本文章采用 %s 进行许可。","all_rights_reserved":"版权所有 &#169 %s，禁止转载。","public_domain":"本文为公有领域作品，可自由转载、引用。"},"ago":{"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"},"create_time":"创建","update_time":"更新","expired":"这篇文章最后更新于 %s 天前，内容可能已经过时。"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+	<div class="progress-bar-container">
+	
+
+	
+	<span class="pjax-progress-bar"></span>
+	<!--        <span class="swup-progress-icon">-->
+	<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+	<!--        </span>-->
+	
+</div>
+
+<main class="page-container" id="swup">
+
+	
+
+	<div class="main-content-container flex flex-col justify-between min-h-dvh">
+		<div class="main-content-header">
+			<header class="navbar-container px-6 md:px-12">
+    <div class="navbar-content transition-navbar ">
+        <div class="left">
+            
+            <a class="logo-title" href="/">
+                
+                Theme Redefine
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/categories/"
+                                        >
+                                    <i class="fa-solid fa-folder fa-fw"></i>
+                                    分类
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   target="_blank" rel="noopener" href="https://github.com/jgkfdsa/blog-source"
+                                        >
+                                    <i class="fa-brands fa-github fa-fw"></i>
+                                    GITHUB
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                    
+                        <li class="navbar-item search search-popup-trigger">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-dvh w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/categories/"
+                        >
+                            <span>
+                                分类
+                            </span>
+                            
+                                <i class="fa-solid fa-folder fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           target="_blank" rel="noopener" href="https://github.com/jgkfdsa/blog-source"
+                        >
+                            <span>
+                                GITHUB
+                            </span>
+                            
+                                <i class="fa-brands fa-github fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+
+            
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">0</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">8</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">40</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+		</div>
+
+		<div class="main-content-body transition-fade-up">
+			
+
+			<div class="main-content">
+				<div class="post-page-container flex relative justify-between box-border w-full h-full">
+	<div class="article-content-container">
+
+		<div class="article-title relative w-full">
+			
+			<div class="w-full flex items-center pt-6 justify-start">
+				<h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3">高可用</h1>
+			</div>
+			
+		</div>
+
+		
+		<div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+			<div class="avatar w-[46px] h-[46px] shrink-0 rounded-medium border border-border-color p-px">
+				<img src="/images/redefine-avatar.svg">
+			</div>
+			<div class="info flex flex-col justify-between">
+				<div class="author flex items-center">
+					<span class="name text-default-text-color text-lg font-semibold">jgkfdsa</span>
+					
+				</div>
+				<div class="meta-info">
+					<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2026-02-28 17:53:37</span>
+        <span class="mobile">2026-02-28 17:53:37</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2026-02-28 17:53:37</span>
+            <span class="mobile">2026-02-28 17:53:37</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/redis/">redis</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+
+    
+    
+    
+    
+</div>
+
+				</div>
+			</div>
+		</div>
+		
+
+		
+
+
+		<div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+			<h1 id="主从复制"><a href="#主从复制" class="headerlink" title="主从复制"></a>主从复制</h1><h2 id="优势"><a href="#优势" class="headerlink" title="优势"></a>优势</h2><table>
+<thead>
+<tr>
+<th>作用</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>数据冗余</td>
+<td>主节点数据自动备份到从节点，防止单点故障导致数据丢失</td>
+</tr>
+<tr>
+<td>读写分离</td>
+<td>主节点处理写请求，从节点处理读请求，提升系统吞吐量</td>
+</tr>
+<tr>
+<td>故障恢复</td>
+<td>主节点宕机后，可手动或通过 Sentinel 自动将从节点提升为主节点</td>
+</tr>
+<tr>
+<td>负载均衡</td>
+<td>多个从节点可分担大量读请求压力</td>
+</tr>
+<tr>
+<td>高可用基础</td>
+<td>是 Redis Sentinel 和 Redis Cluster 架构的前提</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>主节点可以采用树形拓扑（级联复制 Master → Slave1 → Slave2），减少主节点出口带宽压力</p>
+</blockquote>
+<h2 id="基本原理"><a href="#基本原理" class="headerlink" title="基本原理"></a>基本原理</h2><p><strong>1. 建立连接</strong></p>
+<ul>
+<li>从节点通过 REPLICAOF <master-ip> <master-port> 命令向主节点发起长连接。</li>
+<li>主从建立 TCP 连接后，从节点会发送 PSYNC 命令（Partial Sync），尝试进行增量同步。</li>
+</ul>
+<p><strong>2. 数据同步</strong><br>根据是否首次连接或断线时间长短，分为：全量同步、增量同步</p>
+<p><strong>3. 命令传播（实时同步）</strong></p>
+<ul>
+<li>主节点每执行一条写命令（如 SET, DEL），就将该命令以 RESP 协议 格式转发给所有从节点。</li>
+<li>从节点接收到命令后立即执行，保持数据一致。</li>
+</ul>
+<h2 id="全量同步（Full-Sync）"><a href="#全量同步（Full-Sync）" class="headerlink" title="全量同步（Full Sync）"></a>全量同步（Full Sync）</h2><p><strong>触发条件</strong></p>
+<ul>
+<li>从节点首次连接主节点</li>
+<li>从节点断线太久，无法进行增量同步</li>
+<li>主节点 runid 发生变化（如主节点重启）</li>
+</ul>
+<p><strong>流程详解</strong></p>
+<ol>
+<li>从节点发送 PSYNC ? -1（表示未知 runid 和偏移量）</li>
+<li>主节点回复 FULLRESYNC <runid> <offset></li>
+<li>主节点 fork 子进程生成 RDB 快照，同时，主节点将新写入的命令缓存在复制缓冲区</li>
+<li>RDB 文件生成后，主节点将其发送给从节点</li>
+<li>从节点清空自身数据，加载 RDB 文件</li>
+<li>主节点将复制缓冲区中的增量命令发送给从节点</li>
+<li>从节点执行这些命令，完成全量同步</li>
+</ol>
+<blockquote>
+<p>⚠️ 注意：在 Redis 8.0 之前，RDB 和增量命令都通过同一个连接传输；Redis 8.0 引入 RDB Channel，使用两条独立通道分别传输 RDB 和命令，提升效率并降低主节点压力。</p>
+</blockquote>
+<h2 id="增量同步（Partial-Sync-PSYNC）"><a href="#增量同步（Partial-Sync-PSYNC）" class="headerlink" title="增量同步（Partial Sync &#x2F; PSYNC）"></a>增量同步（Partial Sync &#x2F; PSYNC）</h2><p>全量同步代价高（需传输整个 RDB）。为优化短暂断连后的重连，Redis 2.8 引入 PSYNC 机制。</p>
+<p><strong>核心组件</strong></p>
+<ul>
+<li>runid：主节点的唯一标识（每次启动生成）</li>
+<li>replication offset：复制偏移量，表示已同步的数据位置</li>
+<li>repl_backlog_buffer（复制积压缓冲区）：<ul>
+<li>主节点维护的一个环形缓冲区</li>
+<li>持续记录最近的写命令（即使从节点离线）</li>
+<li>默认大小 repl-backlog-size &#x3D; 1MB（可配置）</li>
+</ul>
+</li>
+</ul>
+<p><strong>增量同步流程</strong></p>
+<ol>
+<li>从节点断线后重连，发送 PSYNC <old-runid> <old-offset></li>
+<li>主节点检查：<ul>
+<li>old-runid 是否等于当前 runid？</li>
+<li>old-offset 是否仍在 repl_backlog_buffer 范围内？</li>
+</ul>
+</li>
+<li>若满足，则主节点从 backlog 中提取缺失命令，发送给从节点 → 增量同步成功</li>
+<li>否则，退化为全量同步</li>
+</ol>
+<blockquote>
+<p>从节点将 runid 和 offset 持久化到 RDB 文件中，重启后仍可增量同步<br>主从切换时，新主节点保留旧主的 master_replid2，支持旧从节点增量同步</p>
+</blockquote>
+<h1 id="哨兵"><a href="#哨兵" class="headerlink" title="哨兵"></a>哨兵</h1><h2 id="功能"><a href="#功能" class="headerlink" title="功能"></a>功能</h2><ul>
+<li>哨兵节点为独立进程，通常为奇数个（如 3、5），避免脑裂</li>
+<li>应用客户端连接哨兵获取主节点信息，而非直接连接主节点</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>功能</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>监控</td>
+<td>哨兵定期向主节点、从节点及其他哨兵发送 <code>PING</code>，检测其是否存活</td>
+</tr>
+<tr>
+<td>通知</td>
+<td>当被监控的 Redis 实例状态异常时，可通过 API 或脚本通知管理员</td>
+</tr>
+<tr>
+<td>自动故障转移</td>
+<td>主节点宕机后，自动选举新主节点，并重配从节点和客户端</td>
+</tr>
+<tr>
+<td>配置中心</td>
+<td>客户端通过哨兵查询当前主节点地址，无需硬编码</td>
+</tr>
+</tbody></table>
+<h2 id="工作流程"><a href="#工作流程" class="headerlink" title="工作流程"></a>工作流程</h2><h3 id="步骤-1：持续监控"><a href="#步骤-1：持续监控" class="headerlink" title="步骤 1：持续监控"></a>步骤 1：持续监控</h3><ul>
+<li>每个哨兵每秒向所有 Redis 节点（主、从）和其他哨兵发送 PING</li>
+<li>检查响应是否超时</li>
+</ul>
+<h3 id="步骤-2：主观下线（Subjective-Down-SDOWN）"><a href="#步骤-2：主观下线（Subjective-Down-SDOWN）" class="headerlink" title="步骤 2：主观下线（Subjective Down, SDOWN）"></a>步骤 2：主观下线（Subjective Down, SDOWN）</h3><p>某个哨兵自身认为主节点不可达</p>
+<ul>
+<li>仅代表单个哨兵的判断</li>
+<li>可能是网络抖动或哨兵自身问题导致的误判</li>
+<li>不会触发故障转移</li>
+</ul>
+<h3 id="步骤-3：客观下线（Objective-Down-ODOWN）"><a href="#步骤-3：客观下线（Objective-Down-ODOWN）" class="headerlink" title="步骤 3：客观下线（Objective Down, ODOWN）"></a>步骤 3：客观下线（Objective Down, ODOWN）</h3><p>当认为主节点下线的哨兵数量 ≥ quorum（法定人数）</p>
+<ol>
+<li>发现 SDOWN 的哨兵会向其他哨兵发送 is-master-down-by-addr 请求</li>
+<li>统计同意“主节点已下线”的哨兵数量</li>
+<li>若 ≥ quorum，则标记为 ODOWN</li>
+</ol>
+<blockquote>
+<p>⚠️ quorum 不是“总哨兵数的一半+1”，而是判定 ODOWN 所需的最小同意数。但选举 Leader 仍需多数派（&gt; N&#x2F;2）。</p>
+</blockquote>
+<h3 id="步骤-4：选举-Leader-哨兵"><a href="#步骤-4：选举-Leader-哨兵" class="headerlink" title="步骤 4：选举 Leader 哨兵"></a>步骤 4：选举 Leader 哨兵</h3><p>基于 Raft 算法 的简化版, 选出一个哨兵来执行故障转移（避免多个哨兵同时操作）</p>
+<ul>
+<li>每个哨兵只能投一票</li>
+<li>获得 超过半数 哨兵投票的节点成为 Leader</li>
+<li>先发起选举者优先（先到先得）<blockquote>
+<p>✅ 例如：3 个哨兵，需至少 2 票；5 个哨兵，需至少 3 票。</p>
+</blockquote>
+</li>
+</ul>
+<h3 id="步骤-5：执行故障转移（Failover）"><a href="#步骤-5：执行故障转移（Failover）" class="headerlink" title="步骤 5：执行故障转移（Failover）"></a>步骤 5：执行故障转移（Failover）</h3><p>Leader 哨兵执行以下操作：</p>
+<ol>
+<li>选择新主节点：从所有从节点中按优先级筛选：健康 &gt; 优先级 &gt; 复制偏移量 &gt; Run ID 字典序</li>
+<li>提升新主节点：向选中的从节点发送 REPLICAOF NO ONE，使其成为主节点</li>
+<li>重配其他从节点： 向其余从节点发送 REPLICAOF <new-master-ip> <new-port>，使其同步新主</li>
+<li>更新旧主节点（若恢复）：当原主节点恢复上线，哨兵会自动将其降级为从节点，同步新主数据</li>
+<li>发布事件通知：向所有哨兵和客户端发布 +switch-master 事件，客户端可通过订阅该频道或主动查询哨兵获取新主地址</li>
+</ol>
+<h1 id="集群"><a href="#集群" class="headerlink" title="集群"></a>集群</h1><h2 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h2><p><strong>单机redis瓶颈</strong></p>
+<table>
+<thead>
+<tr>
+<th>限制</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>内存容量</td>
+<td>受限于单机物理内存（如 64GB）</td>
+</tr>
+<tr>
+<td>吞吐能力</td>
+<td>所有读写请求由单线程处理（Redis 6&#x2F;7 引入多线程 I&#x2F;O，但命令执行仍单线程）</td>
+</tr>
+<tr>
+<td>高可用依赖哨兵</td>
+<td>哨兵只解决故障转移，不解决容量和写扩展问题</td>
+</tr>
+</tbody></table>
+<p><strong>集群优势</strong></p>
+<table>
+<thead>
+<tr>
+<th>特性</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>✅ 数据分片（Sharding）</td>
+<td>将 key 空间划分为 16384 个槽（slot），分散到多个主节点</td>
+</tr>
+<tr>
+<td>✅ 去中心化</td>
+<td>无中心节点，所有节点对等通信（Gossip 协议）</td>
+</tr>
+<tr>
+<td>✅ 高可用</td>
+<td>每个主节点可配置一个或多个从节点，主挂后自动切换</td>
+</tr>
+<tr>
+<td>✅ 客户端直连</td>
+<td>客户端直接连接任一节点，通过重定向（MOVED&#x2F;ASK）找到正确节点</td>
+</tr>
+<tr>
+<td>✅ 在线扩容&#x2F;缩容</td>
+<td>支持动态添加&#x2F;移除节点，自动迁移 slot</td>
+</tr>
+<tr>
+<td>❌ 不支持多 key 事务跨 slot</td>
+<td><code>MULTI/EXEC</code>、<code>MSET</code>、<code>SUNION</code> 等要求所有 key 在同一 slot</td>
+</tr>
+</tbody></table>
+<h2 id="哈希槽（Hash-Slot）"><a href="#哈希槽（Hash-Slot）" class="headerlink" title="哈希槽（Hash Slot）"></a>哈希槽（Hash Slot）</h2><ul>
+<li><p>固定 16384 个槽（0 ～ 16383）</p>
+<ul>
+<li>足够大：支持最多 1000+ 节点（官方建议不超过 1000）</li>
+<li>足够小：心跳包中携带的槽信息不会过大（每个槽用 2 字节表示，16384 × 2 &#x3D; 32KB）</li>
+</ul>
+</li>
+<li><p>使用 CRC16 算法计算 key 的 hash 值，再对 16384 取模：</p>
+</li>
+</ul>
+<div class="code-container" data-rel="Python"><figure class="iseeu highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">slot = CRC16(key) % <span class="number">16384</span></span><br></pre></td></tr></table></figure></div>
+
+<h2 id="集群架构"><a href="#集群架构" class="headerlink" title="集群架构"></a>集群架构</h2><ul>
+<li>主节点（Master）：负责一部分 slot 的读写，存储数据</li>
+<li>从节点（Replica&#x2F;Slave）：复制主节点数据，不服务读写（默认），仅用于故障转移<blockquote>
+<p>📌 生产环境建议：3 主 3 从（6 节点）起步。</p>
+</blockquote>
+</li>
+</ul>
+<h2 id="故障转移"><a href="#故障转移" class="headerlink" title="故障转移"></a>故障转移</h2><p>Redis Cluster 使用 Gossip 协议 实现节点间信息交换，无需中心协调。</p>
+<ol>
+<li>主观下线（PFAIL）：某节点认为另一个主节点不可达</li>
+<li>客观下线（FAIL）：通过 Gossip 传播，当集群中多数主节点都认为该节点下线，则标记为 FAIL</li>
+<li>从节点发起选举：该主节点的从节点尝试升级为主</li>
+<li>Raft-like 投票：其他主节点投票，获得多数票者胜出</li>
+<li>更新集群状态：新主接管 slot，广播新配置<blockquote>
+<p>⚠️ 注意：只有主节点参与投票，从节点不参与决策。</p>
+</blockquote>
+</li>
+</ol>
+<h2 id="对比"><a href="#对比" class="headerlink" title="对比"></a>对比</h2><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Redis Cluster</th>
+<th>Redis Sentinel</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>目标</td>
+<td>分布式存储 + 高可用</td>
+<td>高可用（单主架构）</td>
+</tr>
+<tr>
+<td>数据模型</td>
+<td>分片（Sharding）</td>
+<td>全量复制</td>
+</tr>
+<tr>
+<td>写扩展</td>
+<td>✅ 支持</td>
+<td>❌ 不支持</td>
+</tr>
+<tr>
+<td>容量扩展</td>
+<td>✅ 支持</td>
+<td>❌ 不支持</td>
+</tr>
+<tr>
+<td>多 key 操作</td>
+<td>有限制（需同 slot）</td>
+<td>无限制</td>
+</tr>
+<tr>
+<td>运维复杂度</td>
+<td>较高</td>
+<td>较低</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>大数据量、高并发写</td>
+<td>中小规模、强一致性</td>
+</tr>
+</tbody></table>
+
+		</div>
+
+		
+
+		
+
+		
+
+		
+		<div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+			
+			<div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="prev" rel="prev" href="/2026/02/28/redis-%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/">
+					<span class="left arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-left"></i>
+					</span>
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">数据结构</span>
+						<span class="post-nav-item">上一篇</span>
+					</span>
+				</a>
+			</div>
+			
+			
+			<div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="next" rel="next" href="/2026/02/28/system-mode/">
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">mode</span>
+						<span class="post-nav-item">下一篇</span>
+					</span>
+					<span class="right arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-right"></i>
+					</span>
+				</a>
+			</div>
+			
+		</div>
+		
+
+
+		
+	</div>
+
+	
+	<div class="toc-content-container">
+		<div class="post-toc-wrap">
+	<div class="post-toc">
+		<div class="toc-title">目录</div>
+		<div class="page-title">高可用</div>
+		<ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%BB%E4%BB%8E%E5%A4%8D%E5%88%B6"><span class="nav-text">主从复制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BC%98%E5%8A%BF"><span class="nav-text">优势</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86"><span class="nav-text">基本原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%A8%E9%87%8F%E5%90%8C%E6%AD%A5%EF%BC%88Full-Sync%EF%BC%89"><span class="nav-text">全量同步（Full Sync）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A2%9E%E9%87%8F%E5%90%8C%E6%AD%A5%EF%BC%88Partial-Sync-PSYNC%EF%BC%89"><span class="nav-text">增量同步（Partial Sync &#x2F; PSYNC）</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%93%A8%E5%85%B5"><span class="nav-text">哨兵</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8A%9F%E8%83%BD"><span class="nav-text">功能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B"><span class="nav-text">工作流程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4-1%EF%BC%9A%E6%8C%81%E7%BB%AD%E7%9B%91%E6%8E%A7"><span class="nav-text">步骤 1：持续监控</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4-2%EF%BC%9A%E4%B8%BB%E8%A7%82%E4%B8%8B%E7%BA%BF%EF%BC%88Subjective-Down-SDOWN%EF%BC%89"><span class="nav-text">步骤 2：主观下线（Subjective Down, SDOWN）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4-3%EF%BC%9A%E5%AE%A2%E8%A7%82%E4%B8%8B%E7%BA%BF%EF%BC%88Objective-Down-ODOWN%EF%BC%89"><span class="nav-text">步骤 3：客观下线（Objective Down, ODOWN）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4-4%EF%BC%9A%E9%80%89%E4%B8%BE-Leader-%E5%93%A8%E5%85%B5"><span class="nav-text">步骤 4：选举 Leader 哨兵</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AD%A5%E9%AA%A4-5%EF%BC%9A%E6%89%A7%E8%A1%8C%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB%EF%BC%88Failover%EF%BC%89"><span class="nav-text">步骤 5：执行故障转移（Failover）</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4"><span class="nav-text">集群</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%89%B9%E7%82%B9"><span class="nav-text">特点</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%93%88%E5%B8%8C%E6%A7%BD%EF%BC%88Hash-Slot%EF%BC%89"><span class="nav-text">哈希槽（Hash Slot）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%9B%86%E7%BE%A4%E6%9E%B6%E6%9E%84"><span class="nav-text">集群架构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%95%85%E9%9A%9C%E8%BD%AC%E7%A7%BB"><span class="nav-text">故障转移</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AF%B9%E6%AF%94"><span class="nav-text">对比</span></a></li></ol></li></ol>
+
+	</div>
+</div>
+	</div>
+	
+</div>
+
+			</div>
+
+			
+		</div>
+
+		<div class="main-content-footer">
+			<footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+              <span>2026</span>
+              -
+            
+            2026&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">jgkfdsa</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共撰写了 40 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.9.0</a></span>
+        </div>
+        
+        
+            <div>
+                博客已运行 <span class="odometer" id="runtime_days" ></span> 天 <span class="odometer" id="runtime_hours"></span> 小时 <span class="odometer" id="runtime_minutes"></span> 分钟 <span class="odometer" id="runtime_seconds"></span> 秒
+            </div>
+        
+        
+            <script data-swup-reload-script>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+		</div>
+	</div>
+
+	
+	<div class="post-tools">
+		<div class="post-tools-container">
+	<ul class="article-tools-list">
+		<!-- TOC aside toggle -->
+		
+		<li class="right-bottom-tools page-aside-toggle">
+			<i class="fa-regular fa-outdent"></i>
+		</li>
+		
+
+		<!-- go comment -->
+		
+	</ul>
+</div>
+	</div>
+	
+
+	<div class="right-side-tools-container">
+		<div class="side-tools-container">
+	<ul class="hidden-tools-list">
+		<li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-plus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-minus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+			<i class="fa-regular fa-moon"></i>
+		</li>
+
+		<!-- rss -->
+		
+
+		
+
+		<li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+			<i class="fa-regular fa-arrow-down"></i>
+		</li>
+	</ul>
+
+	<ul class="visible-tools-list">
+		<li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+			<i class="fa-regular fa-cog fa-spin"></i>
+		</li>
+		
+		<li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+			<i class="arrow-up fas fa-arrow-up"></i>
+			<span class="percent"></span>
+		</li>
+		
+		
+	</ul>
+</div>
+	</div>
+
+	<div class="image-viewer-container" role="dialog" aria-modal="true" aria-label="图片查看器">
+	<button class="image-viewer-close" type="button" aria-label="关闭">
+		<i class="fa-solid fa-xmark"></i>
+	</button>
+	<button class="image-viewer-prev" type="button" aria-label="上一页">
+		<i class="fa-solid fa-chevron-left"></i>
+	</button>
+	<div class="image-viewer-frame">
+		<img src="" alt="">
+	</div>
+	<div class="image-viewer-exif-panel hidden absolute left-1/2 bottom-20 -translate-x-1/2 w-[min(92vw,420px)] max-h-[60vh] overflow-hidden rounded-2xl bg-background-color-transparent-80 p-4 text-left shadow-redefine-flat backdrop-blur-md" role="dialog" aria-label="EXIF" aria-hidden="true">
+		<div class="flex items-center justify-between mb-3">
+			<span class="text-sm font-semibold text-first-text-color">EXIF</span>
+			<button class="image-viewer-exif-close flex h-8 w-8 items-center justify-center rounded-full bg-background-color-transparent-80 text-first-text-color transition hover:bg-background-color-transparent-40" type="button" aria-label="关闭">
+				<i class="fa-solid fa-xmark text-[0.65rem]"></i>
+			</button>
+		</div>
+		<div class="image-viewer-exif-cards grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-1 scrollbar-hide"></div>
+		<template class="image-viewer-exif-card-template">
+			<div class="rounded-lg bg-background-color-transparent-40 px-3 py-2">
+				<div class="image-viewer-exif-card-header flex items-center gap-2 mb-1">
+					<i class="image-viewer-exif-card-icon fa-solid fa-circle-info text-xs text-third-text-color"></i>
+					<div class="image-viewer-exif-card-title text-xs font-semibold text-first-text-color"></div>
+				</div>
+				<div class="image-viewer-exif-card-items flex flex-col gap-1"></div>
+			</div>
+		</template>
+	</div>
+	<button class="image-viewer-exif-toggle flex items-center gap-2 hidden absolute left-1/2 bottom-6 -translate-x-1/2 rounded-full border border-border-color bg-background-color-transparent-80 px-4 py-2 text-first-text-color backdrop-blur-md transition hover:bg-background-color-transparent-40" type="button" aria-label="EXIF" aria-expanded="false">
+		<i class="fa-solid fa-circle-info text-xs"></i>
+		<span class="text-xs font-semibold uppercase tracking-wider">EXIF</span>
+	</button>
+	<button class="image-viewer-next" type="button" aria-label="下一页">
+		<i class="fa-solid fa-chevron-right"></i>
+	</button>
+</div>
+
+
+	
+	<div class="search-pop-overlay">
+	<div class="popup search-popup">
+		<div class="search-header">
+			<span class="search-input-field-pre">
+				<i class="fa-solid fa-keyboard"></i>
+			</span>
+			<div class="search-input-container">
+				<input autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="站内搜索您需要的内容..." spellcheck="false" type="search" class="search-input">
+			</div>
+			<span class="popup-btn-close">
+				<i class="fa-solid fa-times"></i>
+			</span>
+		</div>
+		<div id="search-result">
+			<div id="no-result">
+				<i class="fa-solid fa-spinner fa-spin-pulse fa-5x fa-fw"></i>
+			</div>
+		</div>
+	</div>
+</div>
+	
+
+</main>
+
+
+
+<script src="/js/build/libs/Swup.min.js"></script>
+
+<script src="/js/build/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/build/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    window.swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+
+    window.dispatchEvent(
+        new CustomEvent("redefine:swup:ready", {
+            detail: {
+                swup: window.swup,
+            },
+        }),
+    );
+</script>
+
+
+
+
+	
+<script src="/js/build/main.js" type="module"></script>
+
+
+
+    
+<script src="/js/build/libs/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+    
+        
+<script src="/js/build/libs/mermaid.min.js"></script>
+
+    
+
+
+
+
+
+
+
+<script src="/js/build/libs/moment-with-locales.min.js" data-swup-reload-script=""></script>
+
+
+
+	
+</body>
+
+</html>

@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    
+    <meta name="author" content="jgkfdsa">
+    
+    <!-- Completely eliminate flash of wrong theme -->
+    <script>
+        (function() {
+            const THEME_KEY = "REDEFINE-THEME-STATUS";
+            const DARK = "dark", LIGHT = "light";
+            
+            // Get preferred theme
+            function getTheme() {
+                try {
+                    const saved = localStorage.getItem(THEME_KEY);
+                    if (saved) {
+                        const { isDark } = JSON.parse(saved);
+                        return isDark ? DARK : LIGHT;
+                    }
+                } catch (e) {}
+                
+                return matchMedia("(prefers-color-scheme: dark)").matches ? DARK : LIGHT;
+            }
+            
+            // Apply theme to document
+            function applyTheme(theme) {
+                const isDark = theme === DARK;
+                const root = document.documentElement;
+                
+                // Set classes for compatibility
+                root.classList.add(theme);
+                root.classList.remove(isDark ? LIGHT : DARK);
+                root.style.colorScheme = theme;
+            }
+            
+            // Initial application
+            const theme = getTheme();
+            applyTheme(theme);
+            
+            // Listen for system preference changes
+            matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ({ matches }) => {
+                // Only update if using system preference (no localStorage entry)
+                if (!localStorage.getItem(THEME_KEY)) {
+                    applyTheme(matches ? DARK : LIGHT);
+                }
+            });
+            
+            // Set body classes ASAP (before DOMContentLoaded)
+            (function() {
+                const addBodyClass = () => {
+                    const b = document.body;
+                    if (!b) return false;
+                    b.classList.add(theme + "-mode");
+                    return true;
+                };
+
+                // Try immediately
+                if (addBodyClass()) return;
+
+                // Observe until body exists
+                const mo = new MutationObserver(() => {
+                    if (addBodyClass()) mo.disconnect();
+                });
+                mo.observe(document.documentElement, { childList: true, subtree: true });
+            })();
+        })();
+    </script>
+    
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://jgkfdsa.github.io/2026/02/28/cloud-docker/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+    
+        
+        <meta name="description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="docker">
+<meta property="og:url" content="https://jgkfdsa.github.io/2026/02/28/cloud-docker/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://jgkfdsa.github.io/images/redefine-og.webp">
+<meta property="article:published_time" content="2026-02-28T09:53:37.394Z">
+<meta property="article:modified_time" content="2026-02-28T09:53:37.394Z">
+<meta property="article:author" content="jgkfdsa">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jgkfdsa.github.io/images/redefine-og.webp">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="/images/redefine-favicon.svg" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/redefine-favicon.svg">
+    <meta name="theme-color" content="#A31F34">
+    <link rel="shortcut icon" href="/images/redefine-favicon.svg">
+    <!--- Page Info-->
+    
+    <title>
+        
+            docker | Theme Redefine
+        
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/css/build/tailwind.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/GeistMono/geist-mono.css">
+
+    
+<link rel="stylesheet" href="/fonts/Geist/geist.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+    
+    
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"jgkfdsa.github.io","root":"/","language":"zh-CN","path":"search.json"};
+    window.theme = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"delete_mask":false,"title_alignment":"left","headings_top_spacing":{"h1":"3.2rem","h2":"2.4rem","h3":"1.9rem","h4":"1.6rem","h5":"1.4rem","h6":"1.3rem"}},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":false,"auto":false,"list":[]},"code_block":{"copy":true,"style":"mac","highlight_theme":{"light":"github","dark":"vs2015"},"font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":{"enable":false,"default":"cc_by_nc_sa"},"lazyload":true,"pangu_js":false,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#A31F34","secondary":null,"default_mode":"light"},"global":{"fonts":{"chinese":{"enable":false,"family":null,"url":null},"english":{"enable":false,"family":null,"url":null},"title":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":false},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":false,"site_pv":false,"site_uv":false,"post_pv":false},"single_page":true,"preloader":{"enable":false,"custom_message":null},"side_tools":{"gear_rotation":true,"auto_expand":false},"open_graph":{"enable":true,"image":"/images/redefine-og.webp","description":"Hexo Theme Redefine, Redefine Your Hexo Journey."},"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/images/wallhaven-wqery6-light.webp","dark":"/images/wallhaven-wqery6-dark.webp"},"title":"Theme Redefine","subtitle":{"text":[],"hitokoto":{"enable":false,"show_author":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":false,"style":"default","links":[],"qrs":[]}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":true,"version":"11.4.1","theme":{"light":"default","dark":"dark"}}},"version":"2.9.0","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Categories":{"path":"/categories/","icon":"fa-solid fa-folder"},"Github":{"path":"https://github.com/jgkfdsa/blog-source","icon":"fa-brands fa-github"}},"search":{"enable":true,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"blur","masonry":{"batch_size":12,"initial_batch_size":24}},"home":{"sidebar":{"enable":true,"position":"left","first_item":"menu","announcement":null,"show_on_mobile":true,"links":null},"article_date_format":"auto","excerpt_length":200,"categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footer":{"runtime":true,"icon":"<i class=\"fa-solid fa-heart fa-beat\" style=\"--fa-animation-duration: 0.5s; color: #f54545\"></i>","start":"2026/01/08 10:45:14","statistics":true,"customize":null,"icp":{"enable":false,"number":null,"url":null}},"footerStart":"2026/01/08 10:45:14","mermaid":{"style":{"light":"default","dark":"dark"}}};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.i18n = {"search":"站内搜索您需要的内容...","toc":"目录","prev":"上一页","next":"下一页","prev_posts":"上一篇","next_posts":"下一篇","page":"第 %d 页","recent_posts":"最新文章","share":"分享","powered_by":"由 %s 驱动","theme":"主题","rss_feed":"RSS Feed","category":"分类","categories":"分类","tag":"标签","tags":"标签","post":"文章","posts":"文章","tagcloud":"标签云","comment":"评论","comments":"评论","top":"置顶","sticky":"置顶","go-back-home":"回到首页","masonry_loading":"照片加载中...","image_viewer":"图片查看器","close":"关闭","exif":{"title":"EXIF","cards":{"camera":"相机","lens":"镜头","exposure":"曝光","other":"其他"},"fields":{"make":"品牌","model":"机型","date_taken":"拍摄时间","lens_model":"镜头","focal_length":"焦距","focus_mode":"对焦模式","shutter":"快门","aperture":"光圈","iso":"感光度","exposure_program":"曝光程序","exposure_compensation":"曝光补偿","metering_mode":"测光模式","flash":"闪光灯","white_balance":"白平衡","latitude":"纬度","longitude":"经度","altitude":"海拔"},"status":{"loading":"加载中...","no_exif":"无 EXIF 信息","library_missing":"EXIF 库未加载","image_source_missing":"图片地址不可用","unavailable":"EXIF 不可用（可能被 CORS 阻止或缺少元数据）","flag_unavailable":"EXIF 不可用"}},"home":"首页","archive":"归档","archives":"归档","about":"关于","links":"链接","link":"链接","friends":"友情链接","friend":"友情链接","timeline":"时间轴","shuoshuo":"说说","bookmarks":"书签","site_uv":"访问人数","site_pv":"总访问量","read_more":"阅读全文","wordcount":"字","min2read":"分钟","changelog":"更新日志","status":"状态","runtime":"博客已运行","days":"天","hours":"小时","minutes":"分钟","seconds":"秒","optimized_by":"并由 Evan 进行优化","rights":"版权所有","site_posts":"共撰写了 %s 篇文章","site_wordcount":"共 %s 字","copyright":{"title":"标题","author":"作者","link":"链接","create_time":"创建于","update_time":"更新于","license_title":"版权声明","license_content":"本文章采用 %s 进行许可。","all_rights_reserved":"版权所有 &#169 %s，禁止转载。","public_domain":"本文为公有领域作品，可自由转载、引用。"},"ago":{"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"},"create_time":"创建","update_time":"更新","expired":"这篇文章最后更新于 %s 天前，内容可能已经过时。"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+	<div class="progress-bar-container">
+	
+
+	
+	<span class="pjax-progress-bar"></span>
+	<!--        <span class="swup-progress-icon">-->
+	<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+	<!--        </span>-->
+	
+</div>
+
+<main class="page-container" id="swup">
+
+	
+
+	<div class="main-content-container flex flex-col justify-between min-h-dvh">
+		<div class="main-content-header">
+			<header class="navbar-container px-6 md:px-12">
+    <div class="navbar-content transition-navbar ">
+        <div class="left">
+            
+            <a class="logo-title" href="/">
+                
+                Theme Redefine
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/categories/"
+                                        >
+                                    <i class="fa-solid fa-folder fa-fw"></i>
+                                    分类
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   target="_blank" rel="noopener" href="https://github.com/jgkfdsa/blog-source"
+                                        >
+                                    <i class="fa-brands fa-github fa-fw"></i>
+                                    GITHUB
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                    
+                        <li class="navbar-item search search-popup-trigger">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-dvh w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/categories/"
+                        >
+                            <span>
+                                分类
+                            </span>
+                            
+                                <i class="fa-solid fa-folder fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           target="_blank" rel="noopener" href="https://github.com/jgkfdsa/blog-source"
+                        >
+                            <span>
+                                GITHUB
+                            </span>
+                            
+                                <i class="fa-brands fa-github fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+
+            
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">0</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">8</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">40</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+		</div>
+
+		<div class="main-content-body transition-fade-up">
+			
+
+			<div class="main-content">
+				<div class="post-page-container flex relative justify-between box-border w-full h-full">
+	<div class="article-content-container">
+
+		<div class="article-title relative w-full">
+			
+			<div class="w-full flex items-center pt-6 justify-start">
+				<h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3">docker</h1>
+			</div>
+			
+		</div>
+
+		
+		<div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+			<div class="avatar w-[46px] h-[46px] shrink-0 rounded-medium border border-border-color p-px">
+				<img src="/images/redefine-avatar.svg">
+			</div>
+			<div class="info flex flex-col justify-between">
+				<div class="author flex items-center">
+					<span class="name text-default-text-color text-lg font-semibold">jgkfdsa</span>
+					
+				</div>
+				<div class="meta-info">
+					<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2026-02-28 17:53:37</span>
+        <span class="mobile">2026-02-28 17:53:37</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2026-02-28 17:53:37</span>
+            <span class="mobile">2026-02-28 17:53:37</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/cloud/">cloud</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+
+    
+    
+    
+    
+</div>
+
+				</div>
+			</div>
+		</div>
+		
+
+		
+
+
+		<div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+			<h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><ul>
+<li>虚拟机：通过 Hypervisor 在硬件上模拟出完整的计算机，每个 VM 都运行自己的 Guest OS（包括内核），彼此完全独立。</li>
+<li>Docker 容器：没有自己的内核！所有容器都直接运行在宿主机的 Linux 内核之上，只是被“隔离”成看起来像独立系统的进程集合。</li>
+</ul>
+<blockquote>
+<p>✅ 简单说：容器 &#x3D; 被隔离 + 受限的普通 Linux 进程。</p>
+</blockquote>
+<h2 id="Namespaces（命名空间）"><a href="#Namespaces（命名空间）" class="headerlink" title="Namespaces（命名空间）"></a>Namespaces（命名空间）</h2><p>Namespaces 是 Linux 内核提供的一种机制，用于隔离不同进程组看到的系统资源视图。Docker 利用多种 Namespace 类型，让每个容器“以为”自己独占一台机器。</p>
+<table>
+<thead>
+<tr>
+<th>Namespace 类型</th>
+<th>隔离内容</th>
+<th>容器中的表现</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>PID（进程 ID）</td>
+<td>进程编号空间</td>
+<td>容器内 PID&#x3D;1 的进程是它的主进程，看不到宿主机或其他容器的进程</td>
+</tr>
+<tr>
+<td>NET（网络）</td>
+<td>网络设备、IP、端口、路由表等</td>
+<td>容器拥有独立的网络栈（如 <code>eth0</code>、<code>lo</code>），可绑定 80 端口而不冲突</td>
+</tr>
+<tr>
+<td>MNT（挂载）</td>
+<td>文件系统挂载点</td>
+<td>容器有自己的根文件系统（<code>/</code>），由镜像层叠加而成</td>
+</tr>
+<tr>
+<td>UTS</td>
+<td>主机名和域名</td>
+<td>容器可设置自己的 <code>hostname</code>（如 <code>my-container</code>）</td>
+</tr>
+<tr>
+<td>IPC</td>
+<td>进程间通信（信号量、消息队列等）</td>
+<td>容器间无法直接通过 IPC 通信</td>
+</tr>
+<tr>
+<td>USER</td>
+<td>用户和用户组 ID</td>
+<td>容器内 root（UID&#x3D;0）可映射为宿主机的非特权用户（提升安全性）</td>
+</tr>
+</tbody></table>
+<h2 id="Cgroups（Control-Groups）"><a href="#Cgroups（Control-Groups）" class="headerlink" title="Cgroups（Control Groups）"></a>Cgroups（Control Groups）</h2><p>Cgroups 是 Linux 内核的另一项功能，用于限制、记录和隔离进程组使用的物理资源（CPU、内存、磁盘 I&#x2F;O、网络带宽等）。</p>
+<p>Docker 利用 Cgroups 实现：</p>
+<ul>
+<li>限制容器最多使用 512MB 内存</li>
+<li>限制 CPU 使用不超过 0.5 个核心</li>
+<li>限制磁盘写入速率为 10MB&#x2F;s</li>
+<li>统计容器实际资源消耗（用于监控或计费）</li>
+</ul>
+<blockquote>
+<p>✅ 效果：防止某个容器“吃光”宿主机资源，影响其他容器或系统稳定性，实现多租户安全共存。</p>
+</blockquote>
+<h2 id="文件系统：UnionFS-OverlayFS"><a href="#文件系统：UnionFS-OverlayFS" class="headerlink" title="文件系统：UnionFS + OverlayFS"></a>文件系统：UnionFS + OverlayFS</h2><p>虽然容器共享内核，但每个容器需要独立的文件系统视图（比如 &#x2F;bin, &#x2F;etc, &#x2F;usr）。Docker 通过以下方式实现：</p>
+<ol>
+<li>镜像分层：镜像是只读层的叠加（如基础 OS 层 + Python 层 + 应用层）。</li>
+<li>写时复制（Copy-on-Write）：容器启动时，在镜像层之上加一个可写层。只有当容器修改文件时，才将该文件从只读层复制到可写层进行修改。</li>
+<li>Union Mount：通过 OverlayFS 等联合文件系统，将多层“合并”成一个统一的 &#x2F; 目录呈现给容器。</li>
+</ol>
+<p>✅ 效果：</p>
+<ul>
+<li>多个容器可共享同一镜像的只读层，节省磁盘空间。</li>
+<li>容器的修改互不影响，重启后可丢弃（除非使用 Volume 持久化）。</li>
+</ul>
+<h1 id="镜像"><a href="#镜像" class="headerlink" title="镜像"></a>镜像</h1><h2 id="本质"><a href="#本质" class="headerlink" title="本质"></a>本质</h2><p><strong>分层存储</strong></p>
+<ul>
+<li>Docker 镜像由多个只读层（Layers） 叠加而成。</li>
+<li>每一层代表对文件系统的一次增量修改（如安装软件、复制文件、设置环境变量）。</li>
+<li>层与层之间通过 Union File System（如 OverlayFS、AUFS）合并成一个统一的文件系统视图。</li>
+</ul>
+<p>✅ 优势：</p>
+<ul>
+<li>高效复用：多个镜像可共享相同的基础层（如 alpine:3.18）。</li>
+<li>快速构建：修改 Dockerfile 后，仅重建变更层及之后的层（利用构建缓存）。</li>
+<li>节省存储：相同层在磁盘上只存一份。<blockquote>
+<p>📌 示例：镜像 A 和 B 都基于 ubuntu:22.04，则它们共享该基础层，无需重复下载或存储。</p>
+</blockquote>
+</li>
+</ul>
+<p><strong>内容寻址</strong></p>
+<ul>
+<li>每一层通过 SHA256 哈希值唯一标识（如 sha256:a1b2c3…）。</li>
+<li>镜像 ID 即其顶层 Layer 的哈希值。</li>
+<li>确保镜像内容不可篡改，提升安全性。</li>
+</ul>
+<h2 id="组成要素"><a href="#组成要素" class="headerlink" title="组成要素"></a>组成要素</h2><table>
+<thead>
+<tr>
+<th>组件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>基础操作系统层</td>
+<td>如 <code>alpine</code>、<code>ubuntu</code>、<code>centos</code>，提供基本命令和库（但无内核）</td>
+</tr>
+<tr>
+<td>运行时环境</td>
+<td>如 Python 3.11、Node.js 18、OpenJDK 17</td>
+</tr>
+<tr>
+<td>应用代码</td>
+<td>用户编写的程序（如 <code>app.py</code>、<code>main.go</code>）</td>
+</tr>
+<tr>
+<td>依赖库</td>
+<td>第三方包（如 <code>requests</code>、<code>lodash</code>）</td>
+</tr>
+<tr>
+<td>配置文件</td>
+<td>如 <code>nginx.conf</code>、<code>.env</code>、<code>application.yml</code></td>
+</tr>
+<tr>
+<td>元数据（Metadata）</td>
+<td>由 Dockerfile 指令定义：<br> - 启动命令（<code>CMD</code> &#x2F; <code>ENTRYPOINT</code>）<br> - 暴露端口（<code>EXPOSE</code>）<br> - 环境变量（<code>ENV</code>）<br> - 工作目录（<code>WORKDIR</code>）</td>
+</tr>
+</tbody></table>
+<h1 id="Dockerfile"><a href="#Dockerfile" class="headerlink" title="Dockerfile"></a>Dockerfile</h1><p>每条指令独立构建一层（除 ENV、LABEL、EXPOSE 等元数据指令外）。</p>
+<h2 id="FROM-——-指定基础镜像（必需）"><a href="#FROM-——-指定基础镜像（必需）" class="headerlink" title="FROM —— 指定基础镜像（必需）"></a>FROM —— 指定基础镜像（必需）</h2><ul>
+<li>必须是 Dockerfile 的第一条指令（注释除外）。</li>
+<li>支持多阶段构建（Multi-stage Build）：</li>
+<li>使用具体版本标签（如 python:3.11-slim），避免 latest。</li>
+<li>优先选择精简镜像（如 -alpine、-slim、distroless）。</li>
+</ul>
+<div class="code-container" data-rel="Dockerfile"><figure class="iseeu highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> &lt;image&gt; [AS &lt;name&gt;]</span><br></pre></td></tr></table></figure></div>
+<h2 id="RUN-——-执行命令并创建新层"><a href="#RUN-——-执行命令并创建新层" class="headerlink" title="RUN —— 执行命令并创建新层"></a>RUN —— 执行命令并创建新层</h2><ul>
+<li>在构建时执行命令（如安装软件、编译代码）。</li>
+</ul>
+<div class="code-container" data-rel="Dockerfile"><figure class="iseeu highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">RUN</span><span class="language-bash"> apt-get update &amp;&amp; apt-get install -y curl</span></span><br></pre></td></tr></table></figure></div>
+<h2 id="COPY-和-ADD-——-复制文件到镜像"><a href="#COPY-和-ADD-——-复制文件到镜像" class="headerlink" title="COPY 和 ADD —— 复制文件到镜像"></a>COPY 和 ADD —— 复制文件到镜像</h2><ul>
+<li>COPY：仅复制本地文件&#x2F;目录到镜像</li>
+<li>ADD：支持 URL 下载、自动解压 tar 包</li>
+</ul>
+<div class="code-container" data-rel="Dockerfile"><figure class="iseeu highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">COPY</span><span class="language-bash"> --from=builder /app .</span></span><br></pre></td></tr></table></figure></div>
+<h2 id="WORKDIR-——-设置工作目录"><a href="#WORKDIR-——-设置工作目录" class="headerlink" title="WORKDIR —— 设置工作目录"></a>WORKDIR —— 设置工作目录</h2><ul>
+<li>类似于 cd，后续的 RUN、CMD、COPY 等指令都在此目录下执行。</li>
+<li>如果目录不存在，会自动创建。</li>
+<li>可多次使用，路径可相对或绝对。</li>
+</ul>
+<div class="code-container" data-rel="Dockerfile"><figure class="iseeu highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">WORKDIR</span><span class="language-bash">  /app</span></span><br></pre></td></tr></table></figure></div>
+<h2 id="ENV-——-设置环境变量"><a href="#ENV-——-设置环境变量" class="headerlink" title="ENV —— 设置环境变量"></a>ENV —— 设置环境变量</h2><ul>
+<li>构建时和运行时都可用。</li>
+<li>常用于配置应用参数、版本号等。</li>
+</ul>
+<div class="code-container" data-rel="Dockerfile"><figure class="iseeu highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">ENV</span> KEY=<span class="number">123</span></span><br></pre></td></tr></table></figure></div>
+<h2 id="EXPOSE-——-声明容器监听端口"><a href="#EXPOSE-——-声明容器监听端口" class="headerlink" title="EXPOSE —— 声明容器监听端口"></a>EXPOSE —— 声明容器监听端口</h2><ul>
+<li>仅起文档作用，不实际开放端口。</li>
+<li>实际端口映射需在 docker run -p host_port:container_port 中指定。</li>
+</ul>
+<div class="code-container" data-rel="Dockerfile"><figure class="iseeu highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">EXPOSE</span> <span class="number">8080</span></span><br></pre></td></tr></table></figure></div>
+<h2 id="CMD-——-容器启动命令"><a href="#CMD-——-容器启动命令" class="headerlink" title="CMD —— 容器启动命令"></a>CMD —— 容器启动命令</h2><ul>
+<li>提供默认参数，可被 docker run 后的命令完全替换</li>
+</ul>
+<div class="code-container" data-rel="Dockerfile"><figure class="iseeu highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">CMD</span><span class="language-bash"> [<span class="string">&quot;python&quot;</span>, <span class="string">&quot;app.py&quot;</span>]</span></span><br></pre></td></tr></table></figure></div>
+
+<h1 id="网关"><a href="#网关" class="headerlink" title="网关"></a>网关</h1><ul>
+<li>Docker 容器默认运行在隔离的网络命名空间中，拥有自己的虚拟网络接口（如 eth0）、IP 地址和路由表。</li>
+<li>Docker 会自动创建虚拟网络设备，并设置默认网关作为流量出口，让容器能：访问外网（如下载依赖、调用 API）被宿主机或其他容器访问</li>
+</ul>
+<h2 id="网络模式"><a href="#网络模式" class="headerlink" title="网络模式"></a>网络模式</h2><h3 id="bridge"><a href="#bridge" class="headerlink" title="bridge"></a>bridge</h3><p>这是最常用的网络模式。运行 docker run 而不指定网络时，容器会连接到名为 bridge 的默认网桥。</p>
+<ol>
+<li>Docker 在宿主机上创建一个虚拟网桥：docker0</li>
+<li>每个容器通过 veth pair（虚拟以太网设备对）连接到 docker0</li>
+<li>容器内分配一个私有 IP（如 172.17.0.2&#x2F;16）</li>
+<li>默认网关 &#x3D; docker0 的 IP 地址<blockquote>
+<p>使用 docker network create 创建的自定义网桥更灵活、支持 DNS 解析</p>
+</blockquote>
+</li>
+</ol>
+<h3 id="host"><a href="#host" class="headerlink" title="host"></a>host</h3><ul>
+<li>容器共享宿主机网络命名空间</li>
+<li>无独立 IP，无虚拟网卡，无 Docker 网关</li>
+<li>直接使用宿主机的路由表和网关</li>
+</ul>
+<h3 id="none"><a href="#none" class="headerlink" title="none"></a>none</h3><ul>
+<li>容器无网络接口（只有 lo 回环）</li>
+<li>无 IP，无网关，完全隔离</li>
+</ul>
+<h2 id="原理-1"><a href="#原理-1" class="headerlink" title="原理"></a>原理</h2><p>Docker 网关本身不直接转发流量到外网，而是依赖 Linux 内核的 NAT（网络地址转换） 机制。</p>
+<ol>
+<li>容器发包 → 目标 IP 为外网（如 8.8.8.8）</li>
+<li>路由匹配 default via 172.17.0.1</li>
+<li>包到达 docker0 网桥</li>
+<li>iptables 的 MASQUERADE 规则将源 IP（容器 IP）替换为宿主机 IP</li>
+<li>包通过宿主机物理网卡发出</li>
+</ol>
+
+		</div>
+
+		
+
+		
+
+		
+
+		
+		<div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+			
+			<div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="prev" rel="prev" href="/2026/02/28/kafka-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98/">
+					<span class="left arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-left"></i>
+					</span>
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">常见问题</span>
+						<span class="post-nav-item">上一篇</span>
+					</span>
+				</a>
+			</div>
+			
+			
+			<div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="next" rel="next" href="/2026/02/28/cloud-etcd/">
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">etcd</span>
+						<span class="post-nav-item">下一篇</span>
+					</span>
+					<span class="right arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-right"></i>
+					</span>
+				</a>
+			</div>
+			
+		</div>
+		
+
+
+		
+	</div>
+
+	
+	<div class="toc-content-container">
+		<div class="post-toc-wrap">
+	<div class="post-toc">
+		<div class="toc-title">目录</div>
+		<div class="page-title">docker</div>
+		<ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8E%9F%E7%90%86"><span class="nav-text">原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Namespaces%EF%BC%88%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4%EF%BC%89"><span class="nav-text">Namespaces（命名空间）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cgroups%EF%BC%88Control-Groups%EF%BC%89"><span class="nav-text">Cgroups（Control Groups）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%EF%BC%9AUnionFS-OverlayFS"><span class="nav-text">文件系统：UnionFS + OverlayFS</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%95%9C%E5%83%8F"><span class="nav-text">镜像</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E8%B4%A8"><span class="nav-text">本质</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BB%84%E6%88%90%E8%A6%81%E7%B4%A0"><span class="nav-text">组成要素</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Dockerfile"><span class="nav-text">Dockerfile</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#FROM-%E2%80%94%E2%80%94-%E6%8C%87%E5%AE%9A%E5%9F%BA%E7%A1%80%E9%95%9C%E5%83%8F%EF%BC%88%E5%BF%85%E9%9C%80%EF%BC%89"><span class="nav-text">FROM —— 指定基础镜像（必需）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#RUN-%E2%80%94%E2%80%94-%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4%E5%B9%B6%E5%88%9B%E5%BB%BA%E6%96%B0%E5%B1%82"><span class="nav-text">RUN —— 执行命令并创建新层</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#COPY-%E5%92%8C-ADD-%E2%80%94%E2%80%94-%E5%A4%8D%E5%88%B6%E6%96%87%E4%BB%B6%E5%88%B0%E9%95%9C%E5%83%8F"><span class="nav-text">COPY 和 ADD —— 复制文件到镜像</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#WORKDIR-%E2%80%94%E2%80%94-%E8%AE%BE%E7%BD%AE%E5%B7%A5%E4%BD%9C%E7%9B%AE%E5%BD%95"><span class="nav-text">WORKDIR —— 设置工作目录</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ENV-%E2%80%94%E2%80%94-%E8%AE%BE%E7%BD%AE%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F"><span class="nav-text">ENV —— 设置环境变量</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#EXPOSE-%E2%80%94%E2%80%94-%E5%A3%B0%E6%98%8E%E5%AE%B9%E5%99%A8%E7%9B%91%E5%90%AC%E7%AB%AF%E5%8F%A3"><span class="nav-text">EXPOSE —— 声明容器监听端口</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CMD-%E2%80%94%E2%80%94-%E5%AE%B9%E5%99%A8%E5%90%AF%E5%8A%A8%E5%91%BD%E4%BB%A4"><span class="nav-text">CMD —— 容器启动命令</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BD%91%E5%85%B3"><span class="nav-text">网关</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%BC%8F"><span class="nav-text">网络模式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#bridge"><span class="nav-text">bridge</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#host"><span class="nav-text">host</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#none"><span class="nav-text">none</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8E%9F%E7%90%86-1"><span class="nav-text">原理</span></a></li></ol></li></ol>
+
+	</div>
+</div>
+	</div>
+	
+</div>
+
+			</div>
+
+			
+		</div>
+
+		<div class="main-content-footer">
+			<footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+              <span>2026</span>
+              -
+            
+            2026&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">jgkfdsa</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共撰写了 40 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.9.0</a></span>
+        </div>
+        
+        
+            <div>
+                博客已运行 <span class="odometer" id="runtime_days" ></span> 天 <span class="odometer" id="runtime_hours"></span> 小时 <span class="odometer" id="runtime_minutes"></span> 分钟 <span class="odometer" id="runtime_seconds"></span> 秒
+            </div>
+        
+        
+            <script data-swup-reload-script>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+		</div>
+	</div>
+
+	
+	<div class="post-tools">
+		<div class="post-tools-container">
+	<ul class="article-tools-list">
+		<!-- TOC aside toggle -->
+		
+		<li class="right-bottom-tools page-aside-toggle">
+			<i class="fa-regular fa-outdent"></i>
+		</li>
+		
+
+		<!-- go comment -->
+		
+	</ul>
+</div>
+	</div>
+	
+
+	<div class="right-side-tools-container">
+		<div class="side-tools-container">
+	<ul class="hidden-tools-list">
+		<li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-plus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-minus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+			<i class="fa-regular fa-moon"></i>
+		</li>
+
+		<!-- rss -->
+		
+
+		
+
+		<li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+			<i class="fa-regular fa-arrow-down"></i>
+		</li>
+	</ul>
+
+	<ul class="visible-tools-list">
+		<li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+			<i class="fa-regular fa-cog fa-spin"></i>
+		</li>
+		
+		<li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+			<i class="arrow-up fas fa-arrow-up"></i>
+			<span class="percent"></span>
+		</li>
+		
+		
+	</ul>
+</div>
+	</div>
+
+	<div class="image-viewer-container" role="dialog" aria-modal="true" aria-label="图片查看器">
+	<button class="image-viewer-close" type="button" aria-label="关闭">
+		<i class="fa-solid fa-xmark"></i>
+	</button>
+	<button class="image-viewer-prev" type="button" aria-label="上一页">
+		<i class="fa-solid fa-chevron-left"></i>
+	</button>
+	<div class="image-viewer-frame">
+		<img src="" alt="">
+	</div>
+	<div class="image-viewer-exif-panel hidden absolute left-1/2 bottom-20 -translate-x-1/2 w-[min(92vw,420px)] max-h-[60vh] overflow-hidden rounded-2xl bg-background-color-transparent-80 p-4 text-left shadow-redefine-flat backdrop-blur-md" role="dialog" aria-label="EXIF" aria-hidden="true">
+		<div class="flex items-center justify-between mb-3">
+			<span class="text-sm font-semibold text-first-text-color">EXIF</span>
+			<button class="image-viewer-exif-close flex h-8 w-8 items-center justify-center rounded-full bg-background-color-transparent-80 text-first-text-color transition hover:bg-background-color-transparent-40" type="button" aria-label="关闭">
+				<i class="fa-solid fa-xmark text-[0.65rem]"></i>
+			</button>
+		</div>
+		<div class="image-viewer-exif-cards grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-1 scrollbar-hide"></div>
+		<template class="image-viewer-exif-card-template">
+			<div class="rounded-lg bg-background-color-transparent-40 px-3 py-2">
+				<div class="image-viewer-exif-card-header flex items-center gap-2 mb-1">
+					<i class="image-viewer-exif-card-icon fa-solid fa-circle-info text-xs text-third-text-color"></i>
+					<div class="image-viewer-exif-card-title text-xs font-semibold text-first-text-color"></div>
+				</div>
+				<div class="image-viewer-exif-card-items flex flex-col gap-1"></div>
+			</div>
+		</template>
+	</div>
+	<button class="image-viewer-exif-toggle flex items-center gap-2 hidden absolute left-1/2 bottom-6 -translate-x-1/2 rounded-full border border-border-color bg-background-color-transparent-80 px-4 py-2 text-first-text-color backdrop-blur-md transition hover:bg-background-color-transparent-40" type="button" aria-label="EXIF" aria-expanded="false">
+		<i class="fa-solid fa-circle-info text-xs"></i>
+		<span class="text-xs font-semibold uppercase tracking-wider">EXIF</span>
+	</button>
+	<button class="image-viewer-next" type="button" aria-label="下一页">
+		<i class="fa-solid fa-chevron-right"></i>
+	</button>
+</div>
+
+
+	
+	<div class="search-pop-overlay">
+	<div class="popup search-popup">
+		<div class="search-header">
+			<span class="search-input-field-pre">
+				<i class="fa-solid fa-keyboard"></i>
+			</span>
+			<div class="search-input-container">
+				<input autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="站内搜索您需要的内容..." spellcheck="false" type="search" class="search-input">
+			</div>
+			<span class="popup-btn-close">
+				<i class="fa-solid fa-times"></i>
+			</span>
+		</div>
+		<div id="search-result">
+			<div id="no-result">
+				<i class="fa-solid fa-spinner fa-spin-pulse fa-5x fa-fw"></i>
+			</div>
+		</div>
+	</div>
+</div>
+	
+
+</main>
+
+
+
+<script src="/js/build/libs/Swup.min.js"></script>
+
+<script src="/js/build/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/build/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    window.swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+
+    window.dispatchEvent(
+        new CustomEvent("redefine:swup:ready", {
+            detail: {
+                swup: window.swup,
+            },
+        }),
+    );
+</script>
+
+
+
+
+	
+<script src="/js/build/main.js" type="module"></script>
+
+
+
+    
+<script src="/js/build/libs/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+    
+        
+<script src="/js/build/libs/mermaid.min.js"></script>
+
+    
+
+
+
+
+
+
+
+<script src="/js/build/libs/moment-with-locales.min.js" data-swup-reload-script=""></script>
+
+
+
+	
+</body>
+
+</html>
