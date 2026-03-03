@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="keywords" content="Hexo Theme Redefine">
+    
+    
+    <meta name="author" content="jgkfdsa">
+    
+    <!-- Completely eliminate flash of wrong theme -->
+    <script>
+        (function() {
+            const THEME_KEY = "REDEFINE-THEME-STATUS";
+            const DARK = "dark", LIGHT = "light";
+            
+            // Get preferred theme
+            function getTheme() {
+                try {
+                    const saved = localStorage.getItem(THEME_KEY);
+                    if (saved) {
+                        const { isDark } = JSON.parse(saved);
+                        return isDark ? DARK : LIGHT;
+                    }
+                } catch (e) {}
+                
+                return matchMedia("(prefers-color-scheme: dark)").matches ? DARK : LIGHT;
+            }
+            
+            // Apply theme to document
+            function applyTheme(theme) {
+                const isDark = theme === DARK;
+                const root = document.documentElement;
+                
+                // Set classes for compatibility
+                root.classList.add(theme);
+                root.classList.remove(isDark ? LIGHT : DARK);
+                root.style.colorScheme = theme;
+            }
+            
+            // Initial application
+            const theme = getTheme();
+            applyTheme(theme);
+            
+            // Listen for system preference changes
+            matchMedia("(prefers-color-scheme: dark)").addEventListener("change", ({ matches }) => {
+                // Only update if using system preference (no localStorage entry)
+                if (!localStorage.getItem(THEME_KEY)) {
+                    applyTheme(matches ? DARK : LIGHT);
+                }
+            });
+            
+            // Set body classes ASAP (before DOMContentLoaded)
+            (function() {
+                const addBodyClass = () => {
+                    const b = document.body;
+                    if (!b) return false;
+                    b.classList.add(theme + "-mode");
+                    return true;
+                };
+
+                // Try immediately
+                if (addBodyClass()) return;
+
+                // Observe until body exists
+                const mo = new MutationObserver(() => {
+                    if (addBodyClass()) mo.disconnect();
+                });
+                mo.observe(document.documentElement, { childList: true, subtree: true });
+            })();
+        })();
+    </script>
+    
+    <!-- preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    
+    <!--- Seo Part-->
+    
+    <link rel="canonical" href="https://jgkfdsa.github.io/2026/03/03/场景-排查/"/>
+    <meta name="robots" content="index,follow">
+    <meta name="googlebot" content="index,follow">
+    <meta name="revisit-after" content="1 days">
+    
+    
+        
+        <meta name="description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="排查">
+<meta property="og:url" content="https://jgkfdsa.github.io/2026/03/03/%E5%9C%BA%E6%99%AF-%E6%8E%92%E6%9F%A5/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Hexo Theme Redefine, Redefine Your Hexo Journey.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://jgkfdsa.github.io/images/redefine-og.webp">
+<meta property="article:published_time" content="2026-03-03T09:57:22.955Z">
+<meta property="article:modified_time" content="2026-03-03T09:57:22.955Z">
+<meta property="article:author" content="jgkfdsa">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://jgkfdsa.github.io/images/redefine-og.webp">
+    
+    
+    <!--- Icon Part-->
+    <link rel="icon" type="image/png" href="/images/redefine-favicon.svg" sizes="192x192">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/redefine-favicon.svg">
+    <meta name="theme-color" content="#A31F34">
+    <link rel="shortcut icon" href="/images/redefine-favicon.svg">
+    <!--- Page Info-->
+    
+    <title>
+        
+            排查 | Theme Redefine
+        
+    </title>
+
+    
+<link rel="stylesheet" href="/fonts/Chillax/chillax.css">
+
+
+    <!--- Inject Part-->
+    
+
+    
+<link rel="stylesheet" href="/css/style.css">
+
+
+    
+        
+<link rel="stylesheet" href="/css/build/tailwind.css">
+
+    
+
+    
+<link rel="stylesheet" href="/fonts/GeistMono/geist-mono.css">
+
+    
+<link rel="stylesheet" href="/fonts/Geist/geist.css">
+
+    <!--- Font Part-->
+    
+    
+    
+    
+    
+    
+
+    <script id="hexo-configurations">
+    window.config = {"hostname":"jgkfdsa.github.io","root":"/","language":"zh-CN","path":"search.json"};
+    window.theme = {"articles":{"style":{"font_size":"16px","line_height":1.5,"image_border_radius":"14px","image_alignment":"center","image_caption":false,"link_icon":true,"delete_mask":false,"title_alignment":"left","headings_top_spacing":{"h1":"3.2rem","h2":"2.4rem","h3":"1.9rem","h4":"1.6rem","h5":"1.4rem","h6":"1.3rem"}},"word_count":{"enable":true,"count":true,"min2read":true},"author_label":{"enable":false,"auto":false,"list":[]},"code_block":{"copy":true,"style":"mac","highlight_theme":{"light":"github","dark":"vs2015"},"font":{"enable":false,"family":null,"url":null}},"toc":{"enable":true,"max_depth":3,"number":false,"expand":true,"init_open":true},"copyright":{"enable":false,"default":"cc_by_nc_sa"},"lazyload":true,"pangu_js":false,"recommendation":{"enable":false,"title":"推荐阅读","limit":3,"mobile_limit":2,"placeholder":"/images/wallhaven-wqery6-light.webp","skip_dirs":[]}},"colors":{"primary":"#A31F34","secondary":null,"default_mode":"light"},"global":{"fonts":{"chinese":{"enable":false,"family":null,"url":null},"english":{"enable":false,"family":null,"url":null},"title":{"enable":false,"family":null,"url":null}},"content_max_width":"1000px","sidebar_width":"210px","hover":{"shadow":true,"scale":false},"scroll_progress":{"bar":false,"percentage":true},"website_counter":{"url":"https://cn.vercount.one/js","enable":false,"site_pv":false,"site_uv":false,"post_pv":false},"single_page":true,"preloader":{"enable":false,"custom_message":null},"side_tools":{"gear_rotation":true,"auto_expand":false},"open_graph":{"enable":true,"image":"/images/redefine-og.webp","description":"Hexo Theme Redefine, Redefine Your Hexo Journey."},"google_analytics":{"enable":false,"id":null}},"home_banner":{"enable":true,"style":"fixed","image":{"light":"/images/wallhaven-wqery6-light.webp","dark":"/images/wallhaven-wqery6-dark.webp"},"title":"Theme Redefine","subtitle":{"text":[],"hitokoto":{"enable":false,"show_author":false,"api":"https://v1.hitokoto.cn"},"typing_speed":100,"backing_speed":80,"starting_delay":500,"backing_delay":1500,"loop":true,"smart_backspace":true},"text_color":{"light":"#fff","dark":"#d1d1b6"},"text_style":{"title_size":"2.8rem","subtitle_size":"1.5rem","line_height":1.2},"custom_font":{"enable":false,"family":null,"url":null},"social_links":{"enable":false,"style":"default","links":[],"qrs":[]}},"plugins":{"feed":{"enable":false},"aplayer":{"enable":false,"type":"fixed","audios":[{"name":null,"artist":null,"url":null,"cover":null,"lrc":null}]},"mermaid":{"enable":true,"version":"11.4.1","theme":{"light":"default","dark":"dark"}}},"version":"2.9.0","navbar":{"auto_hide":false,"color":{"left":"#f78736","right":"#367df7","transparency":35},"width":{"home":"1200px","pages":"1000px"},"links":{"Home":{"path":"/","icon":"fa-regular fa-house"},"Categories":{"path":"/categories/","icon":"fa-solid fa-folder"},"Github":{"path":"https://github.com/jgkfdsa/blog-source","icon":"fa-brands fa-github"}},"search":{"enable":true,"preload":true}},"page_templates":{"friends_column":2,"tags_style":"blur","masonry":{"batch_size":12,"initial_batch_size":24}},"home":{"sidebar":{"enable":true,"position":"left","first_item":"menu","announcement":null,"show_on_mobile":true,"links":null},"article_date_format":"auto","excerpt_length":200,"categories":{"enable":true,"limit":3},"tags":{"enable":true,"limit":3}},"footer":{"runtime":true,"icon":"<i class=\"fa-solid fa-heart fa-beat\" style=\"--fa-animation-duration: 0.5s; color: #f54545\"></i>","start":"2026/01/08 10:45:14","statistics":true,"customize":null,"icp":{"enable":false,"number":null,"url":null}},"footerStart":"2026/01/08 10:45:14","mermaid":{"style":{"light":"default","dark":"dark"}}};
+    window.lang_ago = {"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"};
+    window.i18n = {"search":"站内搜索您需要的内容...","toc":"目录","prev":"上一页","next":"下一页","prev_posts":"上一篇","next_posts":"下一篇","page":"第 %d 页","recent_posts":"最新文章","share":"分享","powered_by":"由 %s 驱动","theme":"主题","rss_feed":"RSS Feed","category":"分类","categories":"分类","tag":"标签","tags":"标签","post":"文章","posts":"文章","tagcloud":"标签云","comment":"评论","comments":"评论","top":"置顶","sticky":"置顶","go-back-home":"回到首页","masonry_loading":"照片加载中...","image_viewer":"图片查看器","close":"关闭","exif":{"title":"EXIF","cards":{"camera":"相机","lens":"镜头","exposure":"曝光","other":"其他"},"fields":{"make":"品牌","model":"机型","date_taken":"拍摄时间","lens_model":"镜头","focal_length":"焦距","focus_mode":"对焦模式","shutter":"快门","aperture":"光圈","iso":"感光度","exposure_program":"曝光程序","exposure_compensation":"曝光补偿","metering_mode":"测光模式","flash":"闪光灯","white_balance":"白平衡","latitude":"纬度","longitude":"经度","altitude":"海拔"},"status":{"loading":"加载中...","no_exif":"无 EXIF 信息","library_missing":"EXIF 库未加载","image_source_missing":"图片地址不可用","unavailable":"EXIF 不可用（可能被 CORS 阻止或缺少元数据）","flag_unavailable":"EXIF 不可用"}},"home":"首页","archive":"归档","archives":"归档","about":"关于","links":"链接","link":"链接","friends":"友情链接","friend":"友情链接","timeline":"时间轴","shuoshuo":"说说","bookmarks":"书签","site_uv":"访问人数","site_pv":"总访问量","read_more":"阅读全文","wordcount":"字","min2read":"分钟","changelog":"更新日志","status":"状态","runtime":"博客已运行","days":"天","hours":"小时","minutes":"分钟","seconds":"秒","optimized_by":"并由 Evan 进行优化","rights":"版权所有","site_posts":"共撰写了 %s 篇文章","site_wordcount":"共 %s 字","copyright":{"title":"标题","author":"作者","link":"链接","create_time":"创建于","update_time":"更新于","license_title":"版权声明","license_content":"本文章采用 %s 进行许可。","all_rights_reserved":"版权所有 &#169 %s，禁止转载。","public_domain":"本文为公有领域作品，可自由转载、引用。"},"ago":{"second":"%s 秒前","minute":"%s 分钟前","hour":"%s 小时前","day":"%s 天前","week":"%s 周前","month":"%s 个月前","year":"%s 年前"},"create_time":"创建","update_time":"更新","expired":"这篇文章最后更新于 %s 天前，内容可能已经过时。"};
+    window.data = {"masonry":false};
+  </script>
+    
+    <!--- Fontawesome Part-->
+    
+<link rel="stylesheet" href="/fontawesome/fontawesome.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/brands.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/solid.min.css">
+
+    
+<link rel="stylesheet" href="/fontawesome/regular.min.css">
+
+    
+    
+    
+    
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+	<div class="progress-bar-container">
+	
+
+	
+	<span class="pjax-progress-bar"></span>
+	<!--        <span class="swup-progress-icon">-->
+	<!--            <i class="fa-solid fa-circle-notch fa-spin"></i>-->
+	<!--        </span>-->
+	
+</div>
+
+<main class="page-container" id="swup">
+
+	
+
+	<div class="main-content-container flex flex-col justify-between min-h-dvh">
+		<div class="main-content-header">
+			<header class="navbar-container px-6 md:px-12">
+    <div class="navbar-content transition-navbar ">
+        <div class="left">
+            
+            <a class="logo-title" href="/">
+                
+                Theme Redefine
+                
+            </a>
+        </div>
+
+        <div class="right">
+            <!-- PC -->
+            <div class="desktop">
+                <ul class="navbar-list">
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/"
+                                        >
+                                    <i class="fa-regular fa-house fa-fw"></i>
+                                    首页
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   href="/categories/"
+                                        >
+                                    <i class="fa-solid fa-folder fa-fw"></i>
+                                    分类
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                        
+                            
+
+                            <li class="navbar-item">
+                                <!-- Menu -->
+                                <a class=""
+                                   target="_blank" rel="noopener" href="https://github.com/jgkfdsa/blog-source"
+                                        >
+                                    <i class="fa-brands fa-github fa-fw"></i>
+                                    GITHUB
+                                    
+                                </a>
+
+                                <!-- Submenu -->
+                                
+                            </li>
+                    
+                    
+                        <li class="navbar-item search search-popup-trigger">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </li>
+                    
+                </ul>
+            </div>
+            <!-- Mobile -->
+            <div class="mobile">
+                
+                    <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                
+                <div class="icon-item navbar-bar">
+                    <div class="navbar-bar-middle"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile sheet -->
+    <div class="navbar-drawer h-dvh w-full absolute top-0 left-0 bg-background-color flex flex-col justify-between">
+        <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/"
+                        >
+                            <span>
+                                首页
+                            </span>
+                            
+                                <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           href="/categories/"
+                        >
+                            <span>
+                                分类
+                            </span>
+                            
+                                <i class="fa-solid fa-folder fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+                
+                    
+
+                    <li class="drawer-navbar-item text-base my-1.5 flex flex-col w-full">
+                        
+                        <a class="py-1.5 px-2 flex flex-row items-center justify-between gap-1 hover:!text-primary active:!text-primary text-2xl font-semibold group border-b border-border-color hover:border-primary w-full "
+                           target="_blank" rel="noopener" href="https://github.com/jgkfdsa/blog-source"
+                        >
+                            <span>
+                                GITHUB
+                            </span>
+                            
+                                <i class="fa-brands fa-github fa-sm fa-fw"></i>
+                            
+                        </a>
+                        
+
+                        
+                    </li>
+            
+
+            
+            
+        </ul>
+
+        <div class="statistics flex justify-around my-2.5">
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/tags">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">0</div>
+        <div class="label text-third-text-color text-sm">标签</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/categories">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">8</div>
+        <div class="label text-third-text-color text-sm">分类</div>
+    </a>
+    <a class="item tag-count-item flex flex-col justify-center items-center w-20" href="/archives">
+        <div class="number text-2xl sm:text-xl text-second-text-color font-semibold">40</div>
+        <div class="label text-third-text-color text-sm">文章</div>
+    </a>
+</div>
+    </div>
+
+    <div class="window-mask"></div>
+
+</header>
+
+
+		</div>
+
+		<div class="main-content-body transition-fade-up">
+			
+
+			<div class="main-content">
+				<div class="post-page-container flex relative justify-between box-border w-full h-full">
+	<div class="article-content-container">
+
+		<div class="article-title relative w-full">
+			
+			<div class="w-full flex items-center pt-6 justify-start">
+				<h1 class="article-title-regular text-second-text-color tracking-tight text-4xl md:text-6xl font-semibold px-2 sm:px-6 md:px-8 py-3">排查</h1>
+			</div>
+			
+		</div>
+
+		
+		<div class="article-header flex flex-row gap-2 items-center px-2 sm:px-6 md:px-8">
+			<div class="avatar w-[46px] h-[46px] shrink-0 rounded-medium border border-border-color p-px">
+				<img src="/images/redefine-avatar.svg">
+			</div>
+			<div class="info flex flex-col justify-between">
+				<div class="author flex items-center">
+					<span class="name text-default-text-color text-lg font-semibold">jgkfdsa</span>
+					
+				</div>
+				<div class="meta-info">
+					<div class="article-meta-info">
+    <span class="article-date article-meta-item">
+        <i class="fa-regular fa-pen-fancy"></i>&nbsp;
+        <span class="desktop">2026-03-03 17:57:22</span>
+        <span class="mobile">2026-03-03 17:57:22</span>
+        <span class="hover-info">创建</span>
+    </span>
+    
+        <span class="article-date article-meta-item">
+            <i class="fa-regular fa-wrench"></i>&nbsp;
+            <span class="desktop">2026-03-03 17:57:22</span>
+            <span class="mobile">2026-03-03 17:57:22</span>
+            <span class="hover-info">更新</span>
+        </span>
+    
+
+    
+        <span class="article-categories article-meta-item">
+            <i class="fa-regular fa-folders"></i>&nbsp;
+            <ul>
+                
+                
+                    
+                        
+                        <li>
+                            <a href="/categories/%E5%9C%BA%E6%99%AF/">场景</a>&nbsp;
+                        </li>
+                    
+                    
+                
+            </ul>
+        </span>
+    
+    
+
+    
+    
+    
+    
+</div>
+
+				</div>
+			</div>
+		</div>
+		
+
+		
+
+
+		<div class="article-content markdown-body px-2 sm:px-6 md:px-8 pb-8">
+			<h2 id="死锁"><a href="#死锁" class="headerlink" title="死锁"></a>死锁</h2><h3 id="触发条件"><a href="#触发条件" class="headerlink" title="触发条件"></a>触发条件</h3><p>死锁只有同时满足以下四个条件才会发生：</p>
+<ul>
+<li>互斥条件:  多个线程不能同时使用同一个资源</li>
+<li>持有并等待条件:  等待资源的同时并不会释放自己已经持有的资源 </li>
+<li>不可剥夺条件:  使用完之前不能被其他线程获取</li>
+<li>环路等待条件:  两个线程获取资源的顺序构成了环形链</li>
+</ul>
+<h3 id="排查流程图"><a href="#排查流程图" class="headerlink" title="排查流程图"></a>排查流程图</h3><ol>
+<li>程序是否 Panic？<ul>
+<li>是 -&gt; 阅读 fatal error 下方的堆栈，定位 [semacquire] 或 [chan …] 的行号。</li>
+<li>否 -&gt; 程序卡住但进程在。</li>
+</ul>
+</li>
+<li>获取现场 -&gt; 访问 &#x2F;debug&#x2F;pprof&#x2F;goroutine?debug&#x3D;2 或使用 go tool pprof。</li>
+<li>分析堆栈 -&gt; 找出谁在等锁？谁持有锁？谁在等 Channel？</li>
+<li>还原逻辑 -&gt; 检查锁的获取顺序、Channel 的收发配对、是否有遗漏的 close 或 unlock。</li>
+<li>修复验证 -&gt; 加入超时控制、统一锁顺序、确保 Channel 闭环。</li>
+</ol>
+<h2 id="大key"><a href="#大key" class="headerlink" title="大key"></a>大key</h2><h3 id="判定标准"><a href="#判定标准" class="headerlink" title="判定标准"></a>判定标准</h3><table>
+<thead>
+<tr>
+<th align="left">数据类型</th>
+<th align="left">判定阈值</th>
+<th align="left">风险场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">String</td>
+<td align="left">Value &gt; 10KB (严格) 或 &gt; 1MB (宽松)</td>
+<td align="left">网络传输耗时，阻塞其他请求</td>
+</tr>
+<tr>
+<td align="left">Hash&#x2F;List&#x2F;Set&#x2F;ZSet</td>
+<td align="left">元素数量 &gt; 5,000</td>
+<td align="left"><code>HGETALL</code>&#x2F;<code>LRANGE</code>&#x2F;<code>SMEMBERS</code> 等全量命令耗时剧增</td>
+</tr>
+<tr>
+<td align="left">Stream</td>
+<td align="left">消息数量 &gt; 10,000</td>
+<td align="left"><code>XRANGE</code> 遍历性能下降</td>
+</tr>
+</tbody></table>
+<h3 id="核心危害"><a href="#核心危害" class="headerlink" title="核心危害"></a>核心危害</h3><ul>
+<li>阻塞主线程：Redis 是单线程模型，处理大 Key 的删除或序列化会阻塞后续命令。</li>
+<li>网络拥塞：一次性读取大 Key 会占满网卡带宽。</li>
+<li>内存倾斜：在集群模式下，大 Key 导致某个分片内存爆满，而其他分片空闲。</li>
+<li>持久化卡顿：RDB 快照或 AOF 重写时，大 Key 会导致 fork 耗时增加或磁盘 IO 阻塞。</li>
+</ul>
+<h3 id="如何排查"><a href="#如何排查" class="headerlink" title="如何排查"></a>如何排查</h3><h4 id="使用-redis-cli-–bigkeys-最推荐，在线扫描"><a href="#使用-redis-cli-–bigkeys-最推荐，在线扫描" class="headerlink" title="使用 redis-cli –bigkeys (最推荐，在线扫描)"></a>使用 redis-cli –bigkeys (最推荐，在线扫描)</h4><p>这是 Redis 自带的工具，通过采样方式扫描，对生产环境影响较小。</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">redis-cli -h &lt;host&gt; -p &lt;port&gt; -a &lt;password&gt; --bigkeys</span><br></pre></td></tr></table></figure></div>
+<ul>
+<li>原理：使用 SCAN 命令遍历所有 Key，并抽样检查大小。</li>
+<li>优点：无需停机，操作简单。</li>
+<li>注意：建议在从节点（Slave）执行，避免影响主节点性能；或在业务低峰期执行。</li>
+</ul>
+<h4 id="离线分析-RDB-文件-最安全，无性能影响"><a href="#离线分析-RDB-文件-最安全，无性能影响" class="headerlink" title="离线分析 RDB 文件 (最安全，无性能影响)"></a>离线分析 RDB 文件 (最安全，无性能影响)</h4><p>使用第三方工具解析 RDB 备份文件，完全不消耗线上资源。</p>
+<p>流程：下载 RDB 文件 -&gt; 本地运行工具分析 -&gt; 输出报告。</p>
+<h4 id="监控平台告警"><a href="#监控平台告警" class="headerlink" title="监控平台告警"></a>监控平台告警</h4><p>如果使用了云数据库（如阿里云 Redis、AWS ElastiCache）或自建监控（Prometheus + Exporter），通常可以直接查看 “Top Big Keys” 面板，或通过配置内存使用率阈值触发告警。</p>
+<h3 id="如何处理"><a href="#如何处理" class="headerlink" title="如何处理"></a>如何处理</h3><h4 id="渐进式删除-Lazy-Free-Unlink"><a href="#渐进式删除-Lazy-Free-Unlink" class="headerlink" title="渐进式删除 (Lazy Free &#x2F; Unlink)"></a>渐进式删除 (Lazy Free &#x2F; Unlink)</h4><p>Redis 4.0+：使用 UNLINK 命令代替 DEL。</p>
+<div class="code-container" data-rel="Bash"><figure class="iseeu highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">UNLINK my_big_key</span><br></pre></td></tr></table></figure></div>
+<ul>
+<li>原理：UNLINK 是非阻塞的，它只在主线程中断开 Key 的引用，然后在后台异步线程中真正释放内存。</li>
+<li>自动配置：可以配置 lazyfree-lazy-eviction yes 等参数，让 Redis 在淘汰或过期时自动使用异步删除。</li>
+</ul>
+<h4 id="压缩数据"><a href="#压缩数据" class="headerlink" title="压缩数据"></a>压缩数据</h4><ul>
+<li>对于 String 类型的大 Value（如长文本、JSON），可以在应用层进行压缩（Gzip&#x2F;Zstd）后再存入 Redis，读取时再解压。</li>
+<li>对于 Hash 结构，如果字段名重复度高，可以考虑序列化后存为 String。</li>
+</ul>
+<h2 id="内存泄漏"><a href="#内存泄漏" class="headerlink" title="内存泄漏"></a>内存泄漏</h2><p>内存泄漏通常指程序持有的对象不再被使用，但由于某些引用关系导致 GC（垃圾回收器）无法回收，从而造成内存占用持续增长，最终导致 OOM（Out Of Memory）。</p>
+<h3 id="pprof-排查流程"><a href="#pprof-排查流程" class="headerlink" title="pprof 排查流程"></a>pprof 排查流程</h3><ol>
+<li>监控告警：观察 Prometheus&#x2F;Grafana 中的 go_memstats_heap_alloc_bytes 指标。如果呈阶梯状上升且不回落，确认为泄漏。</li>
+<li>现场取证：<ul>
+<li>在内存低点抓取 heap_start.out。</li>
+<li>复现业务操作或等待一段时间。</li>
+<li>在内存高点抓取 heap_end.out（带上 ?gc&#x3D;1）。</li>
+</ul>
+</li>
+<li>差异分析：<ul>
+<li>运行 go tool pprof -base heap_start.out heap_end.out。</li>
+<li>执行 top 查看增量最大的函数。</li>
+<li>执行 list <FuncName> 定位代码行。</li>
+</ul>
+</li>
+<li>辅助检查：<ul>
+<li>检查 goroutine profile：curl …&#x2F;debug&#x2F;pprof&#x2F;goroutine?debug&#x3D;2，看是否有大量协程卡在 chan receive 或 select。</li>
+<li>检查 block profile：查看是否有锁竞争导致协程堆积。</li>
+</ul>
+</li>
+<li>修复验证：修改代码后，重新压测并观察内存曲线是否平稳。</li>
+</ol>
+<h3 id="死机排查"><a href="#死机排查" class="headerlink" title="死机排查"></a>死机排查</h3><h4 id="确认死因（是-Go-panic-还是被系统-Kill？）"><a href="#确认死因（是-Go-panic-还是被系统-Kill？）" class="headerlink" title="确认死因（是 Go panic 还是被系统 Kill？）"></a>确认死因（是 Go panic 还是被系统 Kill？）</h4><ol>
+<li>检查系统内核日志（最关键）<ul>
+<li>如果是被系统杀死，Go 程序通常来不及打印任何日志就会消失。</li>
+</ul>
+</li>
+<li>检查应用日志<ul>
+<li>Go Panic：如果日志最后显示 <code>fatal error: runtime: out of memory</code>，这是 Go 运行时尝试分配内存失败主动抛出的 Panic。这通常发生在内存碎片化严重或瞬间大分配时。</li>
+<li>无日志突然退出：如果日志在死机前一刻还在正常输出，下一秒就断了，且没有 Panic 堆栈，大概率是被系统 Kill 了（参考第 1 点）。</li>
+</ul>
+</li>
+<li>检查容器&#x2F;编排平台日志（如果是 K8s&#x2F;Docker）<ul>
+<li><code>kubectl describe pod &lt;pod-name&gt;</code> 查看 Last State 和 Reason。如果是 OOMKilled，Exit Code 通常为 137 (128 + 9)。</li>
+</ul>
+</li>
+</ol>
+<h4 id="复盘与推断"><a href="#复盘与推断" class="headerlink" title="复盘与推断"></a>复盘与推断</h4><ol>
+<li>分析监控历史曲线（Grafana&#x2F;Prometheus）<br>查看死机前 1-2 小时的内存监控图表（指标：go_memstats_heap_alloc_bytes 或容器内存使用率）：<ul>
+<li>阶梯状上升：典型的内存泄漏。每次业务请求后内存增加一点，GC 无法回收。<ul>
+<li>推断：检查全局 Map、未关闭的 Channel、无限增长的 Goroutine。</li>
+</ul>
+</li>
+<li>尖峰状突增：瞬间分配了大量内存。<ul>
+<li>推断：是否一次性加载了大文件？查询了超大结果集（大 Key）？进行了大切片拷贝？</li>
+</ul>
+</li>
+<li>平缓上升后骤降：可能是 GC 压力大，最后一次 GC 没来得及跑完就被 Kill 了。</li>
+</ul>
+</li>
+<li>检查代码变更（Git Blame）<br>死机前最近一次上线的代码是什么？<ul>
+<li>是否引入了新的缓存逻辑（只写不删）？</li>
+<li>是否修改了循环逻辑，导致 Goroutine 启动后未退出？</li>
+<li>是否处理了更大的数据量？</li>
+</ul>
+</li>
+<li>审查常见“惯犯”代码<br>重点审查以下高风险区域：<ul>
+<li>全局变量：var globalCache &#x3D; make(map[…]…) 是否有清理机制？</li>
+<li>Goroutine：是否有 for { … } 循环且没有 select 超时或 context 取消？</li>
+<li>大对象处理：是否有 ioutil.ReadAll 读取整个文件到内存？是否有 SELECT * 查全表？</li>
+<li>Timer&#x2F;Ticker：创建了定时器但没调用 .Stop()？</li>
+</ul>
+</li>
+</ol>
+<h4 id="部署“监控陷阱”（为下一次做准备）"><a href="#部署“监控陷阱”（为下一次做准备）" class="headerlink" title="部署“监控陷阱”（为下一次做准备）"></a>部署“监控陷阱”（为下一次做准备）</h4><p>既然无法还原上一次现场，必须确保下一次发生时能抓到确凿证据。</p>
+<h5 id="1-开启自动-Heap-Dump（核心手段）"><a href="#1-开启自动-Heap-Dump（核心手段）" class="headerlink" title="1. 开启自动 Heap Dump（核心手段）"></a>1. 开启自动 Heap Dump（核心手段）</h5><p>配置程序在内存达到阈值时，自动保存 pprof 文件到磁盘或上传到对象存储。</p>
+<div class="code-container" data-rel="Go"><figure class="iseeu highlight go"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">go</span> <span class="function"><span class="keyword">func</span><span class="params">()</span></span> &#123;</span><br><span class="line">    <span class="keyword">for</span> <span class="keyword">range</span> time.Tick(<span class="number">1</span> * time.Minute) &#123;</span><br><span class="line">        <span class="keyword">var</span> m runtime.MemStats</span><br><span class="line">        runtime.ReadMemStats(&amp;m)</span><br><span class="line">        <span class="keyword">if</span> m.Alloc &gt; <span class="number">1.5</span> * <span class="number">1024</span> * <span class="number">1024</span> * <span class="number">1024</span> &#123; <span class="comment">// 例如超过 1.5GB</span></span><br><span class="line">            f, _ := os.Create(fmt.Sprintf(<span class="string">&quot;/tmp/heap_dump_%d.prof&quot;</span>, time.Now().Unix()))</span><br><span class="line">            pprof.WriteHeapProfile(f)</span><br><span class="line">            f.Close()</span><br><span class="line">            log.Println(<span class="string">&quot;High memory detected, heap profile saved!&quot;</span>)</span><br><span class="line">            <span class="comment">// 可选：此时主动退出以便保留现场，或继续运行等待被 Kill</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;()</span><br></pre></td></tr></table></figure></div>
+<h5 id="2-增强监控告警粒度"><a href="#2-增强监控告警粒度" class="headerlink" title="2. 增强监控告警粒度"></a>2. 增强监控告警粒度</h5><p>告警阈值前置：不要等到 95% 才报警。设置在 70% 或 80% 时触发告警，给人工介入留出时间。</p>
+<h5 id="3-限制资源并观察行为"><a href="#3-限制资源并观察行为" class="headerlink" title="3. 限制资源并观察行为"></a>3. 限制资源并观察行为</h5><p>在测试环境或灰度环境中，故意调低内存限制（例如限制为正常值的 50%），复现业务流程。</p>
+<ul>
+<li>让程序更快触发 OOM，从而更快地生成日志或 Core Dump。</li>
+<li>观察在低内存下，哪个功能模块最先报错或变慢。</li>
+</ul>
+<h4 id="针对性优化策略"><a href="#针对性优化策略" class="headerlink" title="针对性优化策略"></a>针对性优化策略</h4><ol>
+<li>如果是泄漏（阶梯上升）：<ul>
+<li>给所有缓存加 TTL 或最大容量限制（LRU）。</li>
+<li>检查所有 go func()，确保有退出机制（Context）。</li>
+<li>检查 Slice&#x2F;Map 是否只增不减。</li>
+</ul>
+</li>
+<li>如果是瞬间大分配（尖峰）：<ul>
+<li>流式处理：不要一次性 ReadAll 文件，改用 io.Reader 逐行&#x2F;逐块处理。</li>
+<li>分页查询：数据库查询加上 LIMIT，分批拉取。</li>
+<li>对象复用：使用 sync.Pool 复用频繁创建销毁的大对象（如 Buffer）。</li>
+</ul>
+</li>
+<li>如果是碎片化：<ul>
+<li>尝试升级 Go 版本（新版 GC 对碎片处理更好）。</li>
+<li>调整 GOGC 参数（默认 100），适当调低（如 50）让 GC 更频繁，虽然增加 CPU 但能降低内存峰值。</li>
+</ul>
+</li>
+</ol>
+<h2 id="僵尸进程"><a href="#僵尸进程" class="headerlink" title="僵尸进程"></a>僵尸进程</h2><p>僵尸进程（Zombie Process） 是指已经终止（执行完毕或被杀死），但其父进程尚未读取其退出状态（exit status）的进程。</p>
+<h3 id="核心特征"><a href="#核心特征" class="headerlink" title="核心特征"></a>核心特征</h3><ul>
+<li>状态：在 ps 命令中显示为 Z (Zombie) 或 <defunct>。</li>
+<li>资源占用：不占用内存（代码和数据段已释放），只占用一个进程 ID (PID) 和进程表中的一个条目。</li>
+<li>危害：单个僵尸进程无害。但如果大量产生（成千上万），会耗尽系统的 PID 资源，导致无法创建新进程。</li>
+<li>关键点：你无法直接杀死僵尸进程（因为 kill 信号是发给运行中的进程的，而它已经死了）。必须通过处理其父进程来解决。</li>
+</ul>
+<h3 id="如何处理僵尸进程？"><a href="#如何处理僵尸进程？" class="headerlink" title="如何处理僵尸进程？"></a>如何处理僵尸进程？</h3><p>由于不能直接 kill 僵尸进程，处理方法取决于父进程的状态。</p>
+<h4 id="场景-1：父进程还在运行（最常见）"><a href="#场景-1：父进程还在运行（最常见）" class="headerlink" title="场景 1：父进程还在运行（最常见）"></a>场景 1：父进程还在运行（最常见）</h4><p>这是代码逻辑问题。父进程创建了子进程，子进程结束后，父进程没有去“收尸”（读取退出状态）。</p>
+<ul>
+<li>临时方案：杀死父进程，僵尸进程会被 init (PID 1) 接管。init 进程设计良好，会定期调用 wait() 清理所有孤儿僵尸进程。</li>
+<li>根本方案：修复代码，任何创建子进程的逻辑，都必须有对应的等待&#x2F;回收逻辑。</li>
+</ul>
+<h4 id="场景-2：父进程已死（PPID-为-1）"><a href="#场景-2：父进程已死（PPID-为-1）" class="headerlink" title="场景 2：父进程已死（PPID 为 1）"></a>场景 2：父进程已死（PPID 为 1）</h4><p>如果父进程已经退出，僵尸进程的 PPID 会变成 1（即 systemd 或 init）。通常不需要人工干预。systemd 会自动定期清理这些孤儿僵尸进程。</p>
+<h4 id="场景-3：内核-Bug（极罕见）"><a href="#场景-3：内核-Bug（极罕见）" class="headerlink" title="场景 3：内核 Bug（极罕见）"></a>场景 3：内核 Bug（极罕见）</h4><p>如果 PPID 为 1 且长时间不消失，可能是内核层面的 Bug。考虑升级 Linux 内核版本。</p>
+
+		</div>
+
+		
+
+		
+
+		
+
+		
+		<div class="article-nav my-8 flex justify-between items-center px-2 sm:px-6 md:px-8">
+			
+			<div class="article-prev border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="prev" rel="prev" href="/2026/03/03/%E5%9C%BA%E6%99%AF-%E5%B9%82%E7%AD%89/">
+					<span class="left arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-left"></i>
+					</span>
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">幂等</span>
+						<span class="post-nav-item">上一篇</span>
+					</span>
+				</a>
+			</div>
+			
+			
+			<div class="article-next border-border-color shadow-redefine-flat shadow-shadow-color-2 rounded-medium px-4 py-2 hover:shadow-redefine-flat-hover hover:shadow-shadow-color-2">
+				<a class="next" rel="next" href="/2026/03/03/%E5%9C%BA%E6%99%AF-%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F/">
+					<span class="title flex justify-center items-center">
+						<span class="post-nav-title-item truncate max-w-48">设计模式</span>
+						<span class="post-nav-item">下一篇</span>
+					</span>
+					<span class="right arrow-icon flex justify-center items-center">
+						<i class="fa-solid fa-chevron-right"></i>
+					</span>
+				</a>
+			</div>
+			
+		</div>
+		
+
+
+		
+	</div>
+
+	
+	<div class="toc-content-container">
+		<div class="post-toc-wrap">
+	<div class="post-toc">
+		<div class="toc-title">目录</div>
+		<div class="page-title">排查</div>
+		<ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%AD%BB%E9%94%81"><span class="nav-text">死锁</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E8%A7%A6%E5%8F%91%E6%9D%A1%E4%BB%B6"><span class="nav-text">触发条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%8E%92%E6%9F%A5%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="nav-text">排查流程图</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%A7key"><span class="nav-text">大key</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%A4%E5%AE%9A%E6%A0%87%E5%87%86"><span class="nav-text">判定标准</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E5%8D%B1%E5%AE%B3"><span class="nav-text">核心危害</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E6%8E%92%E6%9F%A5"><span class="nav-text">如何排查</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86"><span class="nav-text">如何处理</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F"><span class="nav-text">内存泄漏</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#pprof-%E6%8E%92%E6%9F%A5%E6%B5%81%E7%A8%8B"><span class="nav-text">pprof 排查流程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%AD%BB%E6%9C%BA%E6%8E%92%E6%9F%A5"><span class="nav-text">死机排查</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%83%B5%E5%B0%B8%E8%BF%9B%E7%A8%8B"><span class="nav-text">僵尸进程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%A0%B8%E5%BF%83%E7%89%B9%E5%BE%81"><span class="nav-text">核心特征</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%A6%82%E4%BD%95%E5%A4%84%E7%90%86%E5%83%B5%E5%B0%B8%E8%BF%9B%E7%A8%8B%EF%BC%9F"><span class="nav-text">如何处理僵尸进程？</span></a></li></ol></li></ol>
+
+	</div>
+</div>
+	</div>
+	
+</div>
+
+			</div>
+
+			
+		</div>
+
+		<div class="main-content-footer">
+			<footer class="footer mt-5 py-5 h-auto text-base text-third-text-color relative border-t-2 border-t-border-color">
+    <div class="info-container py-3 text-center">
+        
+        <div class="text-center">
+            &copy;
+            
+              <span>2026</span>
+              -
+            
+            2026&nbsp;&nbsp;<i class="fa-solid fa-heart fa-beat" style="--fa-animation-duration: 0.5s; color: #f54545"></i>&nbsp;&nbsp;<a href="/">jgkfdsa</a>
+            
+                
+                <p class="post-count space-x-0.5">
+                    <span>
+                        共撰写了 40 篇文章
+                    </span>
+                    
+                </p>
+            
+        </div>
+        
+        <div class="relative text-center lg:absolute lg:left-[20px] lg:top-1/2 lg:-translate-y-1/2 lg:text-left">
+            <span class="lg:block text-sm">由 <?xml version="1.0" encoding="utf-8"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg class="relative top-[2px] inline-block align-baseline" version="1.1" id="圖層_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="1rem" height="1rem" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><path fill="#0E83CD" d="M256.4,25.8l-200,115.5L56,371.5l199.6,114.7l200-115.5l0.4-230.2L256.4,25.8z M349,354.6l-18.4,10.7l-18.6-11V275H200v79.6l-18.4,10.7l-18.6-11v-197l18.5-10.6l18.5,10.8V237h112v-79.6l18.5-10.6l18.5,10.8V354.6z"/></svg><a target="_blank" class="text-base" href="https://hexo.io">Hexo</a> 驱动</span>
+            <span class="text-sm lg:block">主题&nbsp;<a class="text-base" target="_blank" href="https://github.com/EvanNotFound/hexo-theme-redefine">Redefine v2.9.0</a></span>
+        </div>
+        
+        
+            <div>
+                博客已运行 <span class="odometer" id="runtime_days" ></span> 天 <span class="odometer" id="runtime_hours"></span> 小时 <span class="odometer" id="runtime_minutes"></span> 分钟 <span class="odometer" id="runtime_seconds"></span> 秒
+            </div>
+        
+        
+            <script data-swup-reload-script>
+                try {
+                    function odometer_init() {
+                    const elements = document.querySelectorAll('.odometer');
+                    elements.forEach(el => {
+                        new Odometer({
+                            el,
+                            format: '( ddd).dd',
+                            duration: 200
+                        });
+                    });
+                    }
+                    odometer_init();
+                } catch (error) {}
+            </script>
+        
+        
+        
+    </div>  
+</footer>
+		</div>
+	</div>
+
+	
+	<div class="post-tools">
+		<div class="post-tools-container">
+	<ul class="article-tools-list">
+		<!-- TOC aside toggle -->
+		
+		<li class="right-bottom-tools page-aside-toggle">
+			<i class="fa-regular fa-outdent"></i>
+		</li>
+		
+
+		<!-- go comment -->
+		
+	</ul>
+</div>
+	</div>
+	
+
+	<div class="right-side-tools-container">
+		<div class="side-tools-container">
+	<ul class="hidden-tools-list">
+		<li class="right-bottom-tools tool-font-adjust-plus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-plus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-font-adjust-minus flex justify-center items-center">
+			<i class="fa-regular fa-magnifying-glass-minus"></i>
+		</li>
+
+		<li class="right-bottom-tools tool-dark-light-toggle flex justify-center items-center">
+			<i class="fa-regular fa-moon"></i>
+		</li>
+
+		<!-- rss -->
+		
+
+		
+
+		<li class="right-bottom-tools tool-scroll-to-bottom flex justify-center items-center">
+			<i class="fa-regular fa-arrow-down"></i>
+		</li>
+	</ul>
+
+	<ul class="visible-tools-list">
+		<li class="right-bottom-tools toggle-tools-list flex justify-center items-center">
+			<i class="fa-regular fa-cog fa-spin"></i>
+		</li>
+		
+		<li class="right-bottom-tools tool-scroll-to-top flex justify-center items-center">
+			<i class="arrow-up fas fa-arrow-up"></i>
+			<span class="percent"></span>
+		</li>
+		
+		
+	</ul>
+</div>
+	</div>
+
+	<div class="image-viewer-container" role="dialog" aria-modal="true" aria-label="图片查看器">
+	<button class="image-viewer-close" type="button" aria-label="关闭">
+		<i class="fa-solid fa-xmark"></i>
+	</button>
+	<button class="image-viewer-prev" type="button" aria-label="上一页">
+		<i class="fa-solid fa-chevron-left"></i>
+	</button>
+	<div class="image-viewer-frame">
+		<img src="" alt="">
+	</div>
+	<div class="image-viewer-exif-panel hidden absolute left-1/2 bottom-20 -translate-x-1/2 w-[min(92vw,420px)] max-h-[60vh] overflow-hidden rounded-2xl bg-background-color-transparent-80 p-4 text-left shadow-redefine-flat backdrop-blur-md" role="dialog" aria-label="EXIF" aria-hidden="true">
+		<div class="flex items-center justify-between mb-3">
+			<span class="text-sm font-semibold text-first-text-color">EXIF</span>
+			<button class="image-viewer-exif-close flex h-8 w-8 items-center justify-center rounded-full bg-background-color-transparent-80 text-first-text-color transition hover:bg-background-color-transparent-40" type="button" aria-label="关闭">
+				<i class="fa-solid fa-xmark text-[0.65rem]"></i>
+			</button>
+		</div>
+		<div class="image-viewer-exif-cards grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-1 scrollbar-hide"></div>
+		<template class="image-viewer-exif-card-template">
+			<div class="rounded-lg bg-background-color-transparent-40 px-3 py-2">
+				<div class="image-viewer-exif-card-header flex items-center gap-2 mb-1">
+					<i class="image-viewer-exif-card-icon fa-solid fa-circle-info text-xs text-third-text-color"></i>
+					<div class="image-viewer-exif-card-title text-xs font-semibold text-first-text-color"></div>
+				</div>
+				<div class="image-viewer-exif-card-items flex flex-col gap-1"></div>
+			</div>
+		</template>
+	</div>
+	<button class="image-viewer-exif-toggle flex items-center gap-2 hidden absolute left-1/2 bottom-6 -translate-x-1/2 rounded-full border border-border-color bg-background-color-transparent-80 px-4 py-2 text-first-text-color backdrop-blur-md transition hover:bg-background-color-transparent-40" type="button" aria-label="EXIF" aria-expanded="false">
+		<i class="fa-solid fa-circle-info text-xs"></i>
+		<span class="text-xs font-semibold uppercase tracking-wider">EXIF</span>
+	</button>
+	<button class="image-viewer-next" type="button" aria-label="下一页">
+		<i class="fa-solid fa-chevron-right"></i>
+	</button>
+</div>
+
+
+	
+	<div class="search-pop-overlay">
+	<div class="popup search-popup">
+		<div class="search-header">
+			<span class="search-input-field-pre">
+				<i class="fa-solid fa-keyboard"></i>
+			</span>
+			<div class="search-input-container">
+				<input autocomplete="off" autocorrect="off" autocapitalize="off" placeholder="站内搜索您需要的内容..." spellcheck="false" type="search" class="search-input">
+			</div>
+			<span class="popup-btn-close">
+				<i class="fa-solid fa-times"></i>
+			</span>
+		</div>
+		<div id="search-result">
+			<div id="no-result">
+				<i class="fa-solid fa-spinner fa-spin-pulse fa-5x fa-fw"></i>
+			</div>
+		</div>
+	</div>
+</div>
+	
+
+</main>
+
+
+
+<script src="/js/build/libs/Swup.min.js"></script>
+
+<script src="/js/build/libs/SwupSlideTheme.min.js"></script>
+
+<script src="/js/build/libs/SwupScriptsPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupProgressPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupScrollPlugin.min.js"></script>
+
+<script src="/js/build/libs/SwupPreloadPlugin.min.js"></script>
+
+<script>
+    window.swup = new Swup({
+        plugins: [
+            new SwupScriptsPlugin({
+                optin: true,
+            }),
+            new SwupProgressPlugin(),
+            new SwupScrollPlugin({
+                offset: 80,
+            }),
+            new SwupSlideTheme({
+                mainElement: ".main-content-body",
+            }),
+            new SwupPreloadPlugin(),
+        ],
+        containers: ["#swup"],
+    });
+
+    window.dispatchEvent(
+        new CustomEvent("redefine:swup:ready", {
+            detail: {
+                swup: window.swup,
+            },
+        }),
+    );
+</script>
+
+
+
+
+	
+<script src="/js/build/main.js" type="module"></script>
+
+
+
+    
+<script src="/js/build/libs/odometer.min.js"></script>
+
+    
+<link rel="stylesheet" href="/assets/odometer-theme-minimal.css">
+
+
+
+
+
+
+
+
+
+    
+        
+<script src="/js/build/libs/mermaid.min.js"></script>
+
+    
+
+
+
+
+
+
+
+<script src="/js/build/libs/moment-with-locales.min.js" data-swup-reload-script=""></script>
+
+
+
+	
+</body>
+
+</html>
